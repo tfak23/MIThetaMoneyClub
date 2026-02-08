@@ -1,14 +1,15 @@
 document.addEventListener('DOMContentLoaded', init);
 
+// Module-level members array for use by level click handlers
+let allMembers = [];
+
 async function init() {
     const searchInput = document.getElementById('search-input');
     const loadingEl = document.getElementById('loading-indicator');
     const errorEl = document.getElementById('error-message');
     const staleCacheEl = document.getElementById('stale-cache-warning');
     const resultsListEl = document.getElementById('results-list');
-    const resultDetailEl = document.getElementById('result-detail');
-
-    renderLevelsGrid();
+    const resultDetailTopEl = document.getElementById('result-detail-top');
 
     // Load data
     show(loadingEl);
@@ -22,7 +23,9 @@ async function init() {
         ]);
 
         const { members, stale, cacheDate } = memberResult;
+        allMembers = members;
         initializeSearch(members);
+        renderLevelsGrid();
         searchInput.disabled = false;
         searchInput.focus();
 
@@ -45,6 +48,7 @@ async function init() {
             errorEl.innerHTML = '<strong>Unable to load data.</strong> Please check your internet connection and try again.';
         }
         show(errorEl);
+        renderLevelsGrid();
         return;
     }
 
@@ -53,7 +57,7 @@ async function init() {
     // Search handler - triggers on Enter key only
     function handleSearch() {
         const query = searchInput.value;
-        hide(resultDetailEl);
+        hide(resultDetailTopEl);
         hide(resultsListEl);
 
         if (!query || query.trim().length < 2) {
@@ -107,7 +111,7 @@ function renderResultsList(results) {
 }
 
 function renderResultCard(member) {
-    const container = document.getElementById('result-detail');
+    const container = document.getElementById('result-detail-top');
     const level = getGivingLevel(member.totalDonations);
     const nextLevel = getNextLevel(member.totalDonations);
 
@@ -160,21 +164,66 @@ function renderLevelsGrid() {
     const grid = document.getElementById('levels-grid');
     if (!grid) return;
 
-    grid.innerHTML = GIVING_LEVELS.map(level => {
+    grid.innerHTML = '';
+
+    GIVING_LEVELS.forEach(level => {
         const rangeText = level.max === Infinity
             ? `${formatCurrency(level.min)}+`
             : `${formatCurrency(level.min)} – ${formatCurrency(level.max)}`;
 
-        return `
-            <div class="level-card ${level.cssClass}">
+        const card = document.createElement('div');
+        card.className = `level-card ${level.cssClass}`;
+        card.innerHTML = `
+            <img src="assets/badges/${level.badge}"
+                 alt="${level.name}"
+                 class="level-card-badge"
+                 onerror="this.style.display='none'" />
+            <h3 class="level-card-name">${level.name}</h3>
+            <p class="level-card-range">${rangeText}</p>
+        `;
+        card.addEventListener('click', () => renderLevelMembers(level));
+        grid.appendChild(card);
+    });
+}
+
+function renderLevelMembers(level) {
+    const container = document.getElementById('level-members');
+    if (!container) return;
+
+    const membersInLevel = allMembers.filter(m => {
+        const memberLevel = getGivingLevel(m.totalDonations);
+        return memberLevel && memberLevel.name === level.name;
+    });
+
+    membersInLevel.sort((a, b) => a.lastName.localeCompare(b.lastName));
+
+    const memberListHtml = membersInLevel.length > 0
+        ? `<div class="level-members-list">
+            ${membersInLevel.map(m => `
+                <div class="level-member-item">${escapeHtml(m.fullName)}</div>
+            `).join('')}
+           </div>`
+        : '<p class="no-results">No members at this giving level yet.</p>';
+
+    container.innerHTML = `
+        <div class="card level-members-card">
+            <div class="level-members-header">
                 <img src="assets/badges/${level.badge}"
                      alt="${level.name}"
-                     class="level-card-badge"
+                     class="level-members-badge"
                      onerror="this.style.display='none'" />
-                <h3 class="level-card-name">${level.name}</h3>
-                <p class="level-card-range">${rangeText}</p>
-            </div>`;
-    }).join('');
+                <div>
+                    <h2 class="level-members-title">${level.name}</h2>
+                    <p class="level-members-count">${membersInLevel.length} member${membersInLevel.length !== 1 ? 's' : ''}</p>
+                </div>
+            </div>
+            <div class="accent-divider"></div>
+            ${memberListHtml}
+        </div>
+    `;
+
+    show(container);
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderFundProgress(fundData) {

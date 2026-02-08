@@ -20,6 +20,9 @@
     </header>
 
     <main class="container">
+        <!-- Member Detail (appears above search when a name is clicked) -->
+        <section id="result-detail-top" class="result-detail hidden"></section>
+
         <!-- Search Section -->
         <section class="search-section">
             <div class="card search-card">
@@ -37,7 +40,7 @@
                            autocomplete="off"
                            disabled />
                 </div>
-                <p class="search-hint">Try first name, last name, or roll number (e.g. "Dan" or "42")</p>
+                <p class="search-hint">Try first name, last name, or roll number (e.g. "Dan" or "42") and press Enter</p>
             </div>
         </section>
 
@@ -52,6 +55,9 @@
 
         <!-- Stale Cache Warning -->
         <div id="stale-cache-warning" class="warning-banner hidden"></div>
+
+        <!-- Search Results List (directly below search) -->
+        <section id="results-list" class="results-list hidden"></section>
 
         <!-- Donate Links -->
         <section class="donate-section">
@@ -70,18 +76,15 @@
         <!-- Fund Progress -->
         <section id="fund-progress" class="fund-progress-section hidden"></section>
 
-        <!-- Single Result Detail (above results list so it appears at top) -->
-        <section id="result-detail" class="result-detail hidden"></section>
-
-        <!-- Search Results List -->
-        <section id="results-list" class="results-list hidden"></section>
-
         <!-- Giving Levels Reference -->
         <section class="levels-section">
             <h2 class="section-title">Giving Levels</h2>
             <div class="accent-divider accent-divider-center"></div>
             <div class="levels-grid" id="levels-grid"></div>
         </section>
+
+        <!-- Level Members List (shown when a giving level badge is clicked) -->
+        <section id="level-members" class="level-members-section hidden"></section>
     </main>
 
     <!-- Footer -->

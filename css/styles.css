@@ -565,6 +565,7 @@ main {
     box-shadow: var(--shadow-card);
     padding: 24px 16px;
     text-align: center;
+    cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -591,6 +592,61 @@ main {
 .level-card-range {
     font-size: 0.75rem;
     color: var(--sigep-text-light);
+    font-weight: 500;
+}
+
+/* ===========================
+   Level Members List
+   =========================== */
+
+.level-members-section {
+    max-width: 700px;
+    margin: 0 auto 32px;
+    padding: 0 20px;
+}
+
+.level-members-card {
+    padding: 32px;
+}
+
+.level-members-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.level-members-badge {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+.level-members-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--sigep-dark);
+    margin-bottom: 2px;
+}
+
+.level-members-count {
+    font-size: 0.85rem;
+    color: var(--sigep-text-light);
+}
+
+.level-members-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.level-member-item {
+    padding: 10px 14px;
+    background: var(--sigep-light-gray);
+    border-radius: var(--radius-input);
+    font-size: 0.9rem;
+    color: var(--sigep-dark);
     font-weight: 500;
 }
 
