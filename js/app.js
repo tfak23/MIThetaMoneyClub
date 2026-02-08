@@ -112,6 +112,14 @@ function renderResultsList(results) {
 
 function renderResultCard(member) {
     const container = document.getElementById('result-detail-top');
+    const resultsListEl = document.getElementById('results-list');
+    const searchInput = document.getElementById('search-input');
+
+    // Clear search input and hide results list for a clean look
+    searchInput.value = '';
+    resultsListEl.innerHTML = '';
+    hide(resultsListEl);
+
     const level = getGivingLevel(member.totalDonations);
     const nextLevel = getNextLevel(member.totalDonations);
 
@@ -157,7 +165,7 @@ function renderResultCard(member) {
     `;
 
     show(container);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderLevelsGrid() {
