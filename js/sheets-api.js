@@ -72,6 +72,60 @@ async function fetchFromSheetsAPI() {
     return parseSheetResponse(data);
 }
 
+const FUND_CACHE_KEY = 'moneyclub_fund_data';
+const FUND_CACHE_TS_KEY = 'moneyclub_fund_cache_timestamp';
+
+async function fetchFundProgress() {
+    // Check cache first
+    const cachedData = localStorage.getItem(FUND_CACHE_KEY);
+    const cachedTimestamp = localStorage.getItem(FUND_CACHE_TS_KEY);
+
+    if (cachedData && cachedTimestamp) {
+        const age = Date.now() - new Date(cachedTimestamp).getTime();
+        if (age < getCacheTTL()) {
+            return JSON.parse(cachedData);
+        }
+    }
+
+    if (!CONFIG.API_KEY || CONFIG.API_KEY === 'YOUR_API_KEY_HERE') {
+        throw new Error('API_KEY_NOT_CONFIGURED');
+    }
+
+    const s = CONFIG.SUMMARY;
+    const ranges = [
+        `${s.SHEET_NAME}!${s.AS_OF_DATE}`,
+        `${s.SHEET_NAME}!${s.LEADERSHIP_TOTAL}`,
+        `${s.SHEET_NAME}!${s.LEADERSHIP_GOAL}`,
+        `${s.SHEET_NAME}!${s.BMS_TOTAL}`,
+        `${s.SHEET_NAME}!${s.BMS_GOAL}`
+    ];
+    const rangeParams = ranges.map(r => `ranges=${encodeURIComponent(r)}`).join('&');
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values:batchGet?${rangeParams}&valueRenderOption=FORMATTED_VALUE&key=${CONFIG.API_KEY}`;
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Fund data fetch failed: ${response.status}`);
+
+    const data = await response.json();
+    const vals = data.valueRanges.map(vr => (vr.values && vr.values[0] && vr.values[0][0]) || '');
+
+    const parseNum = (v) => {
+        if (typeof v === 'number') return v;
+        return parseFloat(String(v).replace(/[$,]/g, '')) || 0;
+    };
+
+    const fundData = {
+        asOfDate: vals[0],
+        leadership: { total: parseNum(vals[1]), goal: parseNum(vals[2]) },
+        bms: { total: parseNum(vals[3]), goal: parseNum(vals[4]) }
+    };
+
+    const now = new Date().toISOString();
+    localStorage.setItem(FUND_CACHE_KEY, JSON.stringify(fundData));
+    localStorage.setItem(FUND_CACHE_TS_KEY, now);
+
+    return fundData;
+}
+
 async function getMemberData() {
     const cachedData = localStorage.getItem(CACHE_KEY);
     const cachedTimestamp = localStorage.getItem(CACHE_TS_KEY);

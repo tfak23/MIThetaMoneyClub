@@ -16,10 +16,19 @@ async function init() {
     searchInput.disabled = true;
 
     try {
-        const { members, stale, cacheDate } = await getMemberData();
+        const [memberResult, fundData] = await Promise.all([
+            getMemberData(),
+            fetchFundProgress().catch(() => null)
+        ]);
+
+        const { members, stale, cacheDate } = memberResult;
         initializeSearch(members);
         searchInput.disabled = false;
         searchInput.focus();
+
+        if (fundData) {
+            renderFundProgress(fundData);
+        }
 
         if (stale) {
             const date = new Date(cacheDate).toLocaleDateString();
@@ -41,8 +50,8 @@ async function init() {
 
     hide(loadingEl);
 
-    // Search handler
-    const handleSearch = debounce(function () {
+    // Search handler - triggers on Enter key only
+    function handleSearch() {
         const query = searchInput.value;
         hide(resultDetailEl);
         hide(resultsListEl);
@@ -66,9 +75,14 @@ async function init() {
         }
 
         renderResultsList(results);
-    }, 300);
+    }
 
-    searchInput.addEventListener('input', handleSearch);
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSearch();
+        }
+    });
 }
 
 function renderResultsList(results) {
@@ -77,7 +91,6 @@ function renderResultsList(results) {
 
     results.forEach(result => {
         const member = result.item;
-        const level = getGivingLevel(member.totalDonations);
         const el = document.createElement('button');
         el.className = 'result-list-item';
         el.innerHTML = `
@@ -85,7 +98,6 @@ function renderResultsList(results) {
                 <span class="result-list-name">${escapeHtml(member.fullName)}</span>
                 <span class="result-list-roll">#${escapeHtml(member.roll)}</span>
             </div>
-            <div class="result-list-amount">${formatCurrency(member.totalDonations)}</div>
         `;
         el.addEventListener('click', () => renderResultCard(member));
         container.appendChild(el);
@@ -141,7 +153,7 @@ function renderResultCard(member) {
     `;
 
     show(container);
-    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderLevelsGrid() {
@@ -163,6 +175,56 @@ function renderLevelsGrid() {
                 <p class="level-card-range">${rangeText}</p>
             </div>`;
     }).join('');
+}
+
+function renderFundProgress(fundData) {
+    const container = document.getElementById('fund-progress');
+    if (!container) return;
+
+    const activeFunds = [
+        { name: 'Balanced Man Scholarship', total: fundData.bms.total, goal: fundData.bms.goal, completed: false },
+        { name: 'Leadership Fund', total: fundData.leadership.total, goal: fundData.leadership.goal, completed: false },
+    ];
+
+    const completedFunds = [
+        { name: 'JJ Burning Heart Scholarship', total: 25000, goal: 25000, completed: true },
+        { name: 'Patrick J. Taggart Jr. Passion Scholarship', total: 62500, goal: 62500, completed: true },
+    ];
+
+    const allFunds = [...activeFunds, ...completedFunds];
+
+    const asOfText = fundData.asOfDate ? `As of ${fundData.asOfDate}` : '';
+
+    container.innerHTML = `
+        <h2 class="section-title">Fund Progress</h2>
+        <div class="accent-divider accent-divider-center"></div>
+        ${asOfText ? `<p class="fund-as-of">${asOfText}</p>` : ''}
+        <div class="fund-bars">
+            ${allFunds.map(fund => {
+                const pct = Math.min((fund.total / fund.goal) * 100, 100);
+                const fillClass = fund.completed ? 'progress-bar-fill-completed' : 'progress-bar-fill';
+                const label = fund.completed ? 'Completed' : `${Math.round(pct)}%`;
+                return `
+                    <div class="fund-bar-item">
+                        <div class="fund-bar-header">
+                            <span class="fund-bar-name">${fund.name}</span>
+                            ${fund.completed ? '<span class="fund-completed-badge">Completed</span>' : ''}
+                        </div>
+                        <div class="progress-bar-track">
+                            <div class="${fillClass}" style="width: ${pct}%">
+                                <span class="progress-bar-label">${label}</span>
+                            </div>
+                        </div>
+                        <div class="fund-bar-amounts">
+                            <span>${formatCurrency(fund.total)} raised</span>
+                            <span>Goal: ${formatCurrency(fund.goal)}</span>
+                        </div>
+                    </div>`;
+            }).join('')}
+        </div>
+    `;
+
+    show(container);
 }
 
 // Utility functions

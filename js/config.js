@@ -8,5 +8,13 @@ const CONFIG = {
         LAST_NAME: 'F',
         TOTAL_DONATIONS: 'EV' // Update this if the column moves
     },
-    CACHE_TTL_DAYS: 7
+    CACHE_TTL_DAYS: 7,
+    SUMMARY: {
+        SHEET_NAME: 'Summary',
+        AS_OF_DATE: 'J2',
+        LEADERSHIP_TOTAL: 'J4',
+        LEADERSHIP_GOAL: 'K4',
+        BMS_TOTAL: 'J5',
+        BMS_GOAL: 'K5'
+    }
 };
