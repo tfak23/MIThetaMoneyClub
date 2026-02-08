@@ -1,0 +1,176 @@
+document.addEventListener('DOMContentLoaded', init);
+
+async function init() {
+    const searchInput = document.getElementById('search-input');
+    const loadingEl = document.getElementById('loading-indicator');
+    const errorEl = document.getElementById('error-message');
+    const staleCacheEl = document.getElementById('stale-cache-warning');
+    const resultsListEl = document.getElementById('results-list');
+    const resultDetailEl = document.getElementById('result-detail');
+
+    renderLevelsGrid();
+
+    // Load data
+    show(loadingEl);
+    hide(errorEl);
+    searchInput.disabled = true;
+
+    try {
+        const { members, stale, cacheDate } = await getMemberData();
+        initializeSearch(members);
+        searchInput.disabled = false;
+        searchInput.focus();
+
+        if (stale) {
+            const date = new Date(cacheDate).toLocaleDateString();
+            staleCacheEl.textContent = `Showing data from ${date}. Unable to refresh from server.`;
+            show(staleCacheEl);
+        }
+    } catch (error) {
+        hide(loadingEl);
+        if (error.message === 'API_KEY_NOT_CONFIGURED') {
+            errorEl.innerHTML = '<strong>API key not configured.</strong> Open <code>js/config.js</code> and replace <code>YOUR_API_KEY_HERE</code> with your Google Sheets API key.';
+        } else if (error.message === 'SHEET_NOT_SHARED') {
+            errorEl.innerHTML = '<strong>Unable to access spreadsheet.</strong> Ensure it is shared with "Anyone with the link" set to Viewer.';
+        } else {
+            errorEl.innerHTML = '<strong>Unable to load data.</strong> Please check your internet connection and try again.';
+        }
+        show(errorEl);
+        return;
+    }
+
+    hide(loadingEl);
+
+    // Search handler
+    const handleSearch = debounce(function () {
+        const query = searchInput.value;
+        hide(resultDetailEl);
+        hide(resultsListEl);
+
+        if (!query || query.trim().length < 2) {
+            resultsListEl.innerHTML = '';
+            return;
+        }
+
+        const results = performSearch(query);
+
+        if (results.length === 0) {
+            resultsListEl.innerHTML = '<p class="no-results">No members found matching your search.</p>';
+            show(resultsListEl);
+            return;
+        }
+
+        if (results.length === 1) {
+            renderResultCard(results[0].item);
+            return;
+        }
+
+        renderResultsList(results);
+    }, 300);
+
+    searchInput.addEventListener('input', handleSearch);
+}
+
+function renderResultsList(results) {
+    const container = document.getElementById('results-list');
+    container.innerHTML = '';
+
+    results.forEach(result => {
+        const member = result.item;
+        const level = getGivingLevel(member.totalDonations);
+        const el = document.createElement('button');
+        el.className = 'result-list-item';
+        el.innerHTML = `
+            <div class="result-list-info">
+                <span class="result-list-name">${escapeHtml(member.fullName)}</span>
+                <span class="result-list-roll">#${escapeHtml(member.roll)}</span>
+            </div>
+            <div class="result-list-amount">${formatCurrency(member.totalDonations)}</div>
+        `;
+        el.addEventListener('click', () => renderResultCard(member));
+        container.appendChild(el);
+    });
+
+    show(container);
+}
+
+function renderResultCard(member) {
+    const container = document.getElementById('result-detail');
+    const level = getGivingLevel(member.totalDonations);
+    const nextLevel = getNextLevel(member.totalDonations);
+
+    let badgeHtml = '';
+    if (level) {
+        badgeHtml = `
+            <div class="badge-container">
+                <img src="assets/badges/${level.badge}"
+                     alt="${level.name} badge"
+                     class="badge-image"
+                     onerror="this.style.display='none'" />
+            </div>`;
+    }
+
+    let nextLevelHtml = '';
+    if (nextLevel && member.totalDonations > 0) {
+        const remaining = nextLevel.min - member.totalDonations;
+        nextLevelHtml = `
+            <div class="next-level-info">
+                <p>${formatCurrency(remaining)} away from <strong>${nextLevel.name}</strong></p>
+            </div>`;
+    } else if (!nextLevel && level) {
+        nextLevelHtml = `<div class="next-level-info"><p>Highest giving level achieved!</p></div>`;
+    }
+
+    let levelNameHtml = '';
+    if (level) {
+        levelNameHtml = `<p class="giving-level-name ${level.cssClass}">${level.name}</p>`;
+    } else {
+        levelNameHtml = `<p class="giving-level-name">No donations recorded</p>`;
+    }
+
+    container.innerHTML = `
+        <div class="card result-card">
+            ${badgeHtml}
+            <h2 class="member-name">${escapeHtml(member.fullName)}</h2>
+            <p class="member-roll">Roll #${escapeHtml(member.roll)}</p>
+            <div class="accent-divider"></div>
+            <p class="donation-amount">${formatCurrency(member.totalDonations)}</p>
+            ${levelNameHtml}
+            ${nextLevelHtml}
+        </div>
+    `;
+
+    show(container);
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderLevelsGrid() {
+    const grid = document.getElementById('levels-grid');
+    if (!grid) return;
+
+    grid.innerHTML = GIVING_LEVELS.map(level => {
+        const rangeText = level.max === Infinity
+            ? `${formatCurrency(level.min)}+`
+            : `${formatCurrency(level.min)} – ${formatCurrency(level.max)}`;
+
+        return `
+            <div class="level-card ${level.cssClass}">
+                <img src="assets/badges/${level.badge}"
+                     alt="${level.name}"
+                     class="level-card-badge"
+                     onerror="this.style.display='none'" />
+                <h3 class="level-card-name">${level.name}</h3>
+                <p class="level-card-range">${rangeText}</p>
+            </div>`;
+    }).join('');
+}
+
+// Utility functions
+function show(el) { if (el) el.classList.remove('hidden'); }
+function hide(el) { if (el) el.classList.add('hidden'); }
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MI Theta Money Club | Giving Lookup</title>
+    <meta name="description" content="Look up your MI Theta chapter Money Club giving level and total contributions.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container">
+            <h1 class="site-title">Money Club</h1>
+            <p class="site-subtitle">MI Theta Chapter &middot; Sigma Phi Epsilon</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="card search-card">
+                <h2 class="search-heading">Look Up Your Giving</h2>
+                <p class="search-description">Enter your name or chapter roll number to view your total contributions and giving level.</p>
+                <div class="search-wrapper">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text"
+                           id="search-input"
+                           class="search-input"
+                           placeholder="Search by name or roll number..."
+                           autocomplete="off"
+                           disabled />
+                </div>
+                <p class="search-hint">Try first name, last name, or roll number (e.g. "Dan" or "42")</p>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <div id="loading-indicator" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Loading member data...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-message" class="error-banner hidden"></div>
+
+        <!-- Stale Cache Warning -->
+        <div id="stale-cache-warning" class="warning-banner hidden"></div>
+
+        <!-- Search Results List -->
+        <section id="results-list" class="results-list hidden"></section>
+
+        <!-- Single Result Detail -->
+        <section id="result-detail" class="result-detail hidden"></section>
+
+        <!-- Giving Levels Reference -->
+        <section class="levels-section">
+            <h2 class="section-title">Giving Levels</h2>
+            <div class="accent-divider accent-divider-center"></div>
+            <div class="levels-grid" id="levels-grid"></div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; SigEp MI Theta Chapter &middot; Data updated monthly</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.1.0"></script>
+    <script src="js/config.js"></script>
+    <script src="js/giving-levels.js"></script>
+    <script src="js/sheets-api.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
