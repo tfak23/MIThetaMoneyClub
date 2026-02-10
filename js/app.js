@@ -244,7 +244,7 @@ function renderFundProgress(fundData) {
     ];
 
     const completedFunds = [
-        { name: 'JJ Burning Heart Scholarship', total: 25000, goal: 25000, completed: true },
+        { name: 'John Joseph Jurewicz II Burning Heart Scholarship', total: 25000, goal: 25000, completed: true },
         { name: 'Patrick J. Taggart Jr. Passion Scholarship', total: 62500, goal: 62500, completed: true },
     ];
 
