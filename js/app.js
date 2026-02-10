@@ -181,7 +181,7 @@ function renderResultCard(member) {
             ${badgeHtml}
             ${inMemoryHtml}
             <h2 class="member-name ${nameClass}">${escapeHtml(member.fullName)}</h2>
-            <p class="member-roll">Roll #${escapeHtml(member.rollShort)}</p>
+            <p class="member-roll">Chapter Roll #${escapeHtml(member.rollShort)}</p>
             <div class="accent-divider"></div>
             <p class="donation-amount">${formatCurrency(member.totalDonations)}</p>
             ${levelNameHtml}
