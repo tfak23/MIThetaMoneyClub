@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', init);
 
 // Module-level members array for use by level click handlers
 let allMembers = [];
+// Track which panel is currently open for toggle behavior
+let openLevelName = null;
+let topDonorsOpen = false;
 
 async function init() {
     const searchInput = document.getElementById('search-input');
@@ -206,6 +209,18 @@ function renderLevelMembers(level) {
     const container = document.getElementById('level-members');
     if (!container) return;
 
+    // Toggle: clicking the same level again closes it
+    if (openLevelName === level.name && !container.classList.contains('hidden')) {
+        hide(container);
+        openLevelName = null;
+        return;
+    }
+    openLevelName = level.name;
+
+    // Close top donors if open
+    topDonorsOpen = false;
+    hide(document.getElementById('top-donors'));
+
     const membersInLevel = allMembers.filter(m => {
         const memberLevel = getGivingLevel(m.totalDonations);
         return memberLevel && memberLevel.name === level.name;
@@ -259,6 +274,18 @@ function renderTopDonorsCard() {
 function showTopDonorsList() {
     const container = document.getElementById('top-donors');
     if (!container) return;
+
+    // Toggle: clicking again closes it
+    if (topDonorsOpen && !container.classList.contains('hidden')) {
+        hide(container);
+        topDonorsOpen = false;
+        return;
+    }
+    topDonorsOpen = true;
+
+    // Close level members if open
+    openLevelName = null;
+    hide(document.getElementById('level-members'));
 
     const topMembers = [...allMembers]
         .filter(m => m.totalDonations > 0)
