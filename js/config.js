@@ -3,6 +3,7 @@ const CONFIG = {
     SHEET_NAME: 'Master',
     API_KEY: 'AIzaSyBzYC2v7ohVusXLKIxa3kKf-pJ0eLTDx3M', // Replace with your Google Sheets API key
     COLUMNS: {
+        DESIGNATION: 'C',
         ROLL_NUMBER: 'D',
         FIRST_NAME: 'E',
         LAST_NAME: 'F',
@@ -13,7 +14,7 @@ const CONFIG = {
     YEAR_DONOR_BASE_COL: 101, // CW = column 101
     YEAR_DONOR_COL_STEP: 6,
     CACHE_TTL_DAYS: 7,
-    CACHE_VERSION: 3, // Increment to force cache refresh when data structure changes
+    CACHE_VERSION: 4, // Increment to force cache refresh when data structure changes
     SUMMARY: {
         SHEET_NAME: 'Summary',
         AS_OF_DATE: 'J2',

@@ -17,6 +17,7 @@ function buildApiUrl() {
     const donorCol = getCurrentYearDonorColumn();
     const prevDonorCol = getPreviousYearDonorColumn();
     const ranges = [
+        `${sheet}!${cols.DESIGNATION}:${cols.DESIGNATION}`,
         `${sheet}!${cols.ROLL_NUMBER}:${cols.ROLL_NUMBER}`,
         `${sheet}!${cols.FIRST_NAME}:${cols.FIRST_NAME}`,
         `${sheet}!${cols.LAST_NAME}:${cols.LAST_NAME}`,
@@ -29,19 +30,23 @@ function buildApiUrl() {
 }
 
 function parseSheetResponse(data) {
-    if (!data.valueRanges || data.valueRanges.length < 6) {
+    if (!data.valueRanges || data.valueRanges.length < 7) {
         throw new Error('Unexpected API response format');
     }
 
-    const [rollData, firstNameData, lastNameData, donationData, currentYearData, prevYearData] = data.valueRanges.map(
+    const [designationData, rollData, firstNameData, lastNameData, donationData, currentYearData, prevYearData] = data.valueRanges.map(
         vr => vr.values || []
     );
 
     const members = [];
-    const maxRows = Math.max(rollData.length, firstNameData.length, lastNameData.length, donationData.length, currentYearData.length, prevYearData.length);
+    const maxRows = Math.max(designationData.length, rollData.length, firstNameData.length, lastNameData.length, donationData.length, currentYearData.length, prevYearData.length);
 
     // Start at index 1 to skip header row
     for (let i = 1; i < maxRows; i++) {
+        // Only include members designated as "Brother"
+        const designation = String(designationData[i]?.[0] || '').trim();
+        if (designation.toLowerCase() !== 'brother') continue;
+
         const rollRaw = String(rollData[i]?.[0] || '').trim();
         const firstName = String(firstNameData[i]?.[0] || '').trim();
         let lastName = String(lastNameData[i]?.[0] || '').trim();
