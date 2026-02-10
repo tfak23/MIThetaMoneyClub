@@ -157,6 +157,20 @@ function renderResultCard(member) {
         levelNameHtml = `<p class="giving-level-name">No donations recorded</p>`;
     }
 
+    let ctaHtml = '';
+    if (member.totalDonations === 0) {
+        ctaHtml = `
+            <div class="donate-cta">
+                <p class="donate-cta-text">Make a difference today! Support your chapter by donating to one of our scholarship endowments below.</p>
+                <div class="donate-cta-buttons">
+                    <a href="https://give.sigep.org/give/211213/?_ga=2.62207717.837129945.1670203913-1808852390.1670203913#!/donation/checkout?designation=155554"
+                       class="donate-cta-btn" target="_blank" rel="noopener noreferrer">Support BMS Fund</a>
+                    <a href="https://give.sigep.org/give/211213/?_ga=2.62207717.837129945.1670203913-1808852390.1670203913#!/donation/checkout?designation=155555"
+                       class="donate-cta-btn donate-cta-btn-alt" target="_blank" rel="noopener noreferrer">Support Leadership Fund</a>
+                </div>
+            </div>`;
+    }
+
     const nameClass = getMemberNameClass(member);
     const inMemoryHtml = member.isDeceased
         ? `<p class="in-memory">In Loving Memory of Brother</p>`
@@ -172,6 +186,7 @@ function renderResultCard(member) {
             <p class="donation-amount">${formatCurrency(member.totalDonations)}</p>
             ${levelNameHtml}
             ${nextLevelHtml}
+            ${ctaHtml}
         </div>
     `;
 
@@ -333,7 +348,7 @@ function renderFundProgress(fundData) {
     ];
 
     const completedFunds = [
-        { name: 'John Joseph Jurewicz II Burning Heart Scholarship', total: 25000, goal: 25000, completed: true },
+        { name: 'John Jurewicz II Burning Heart Scholarship', total: 25000, goal: 25000, completed: true },
         { name: 'Patrick J. Taggart Jr. Passion Scholarship', total: 62500, goal: 62500, completed: true },
     ];
 
