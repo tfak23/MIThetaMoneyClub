@@ -6,10 +6,14 @@ const CONFIG = {
         ROLL_NUMBER: 'D',
         FIRST_NAME: 'E',
         LAST_NAME: 'F',
-        TOTAL_DONATIONS: 'EV', // Update this if the column moves
-        CURRENT_YEAR_DONOR: 'CW'
+        TOTAL_DONATIONS: 'EV' // Update this if the column moves
     },
+    // Dynamic year-based donor column: 2026=CW (col 101), each year +6 columns
+    YEAR_DONOR_BASE_YEAR: 2026,
+    YEAR_DONOR_BASE_COL: 101, // CW = column 101
+    YEAR_DONOR_COL_STEP: 6,
     CACHE_TTL_DAYS: 7,
+    CACHE_VERSION: 2, // Increment to force cache refresh when data structure changes
     SUMMARY: {
         SHEET_NAME: 'Summary',
         AS_OF_DATE: 'J2',
@@ -19,3 +23,22 @@ const CONFIG = {
         BMS_GOAL: 'K5'
     }
 };
+
+// Convert a column number (1-based) to spreadsheet letter (e.g. 101 -> "CW")
+function columnNumberToLetter(n) {
+    let result = '';
+    while (n > 0) {
+        n--;
+        result = String.fromCharCode(65 + (n % 26)) + result;
+        n = Math.floor(n / 26);
+    }
+    return result;
+}
+
+// Get the column letter for the current year's donor data
+function getCurrentYearDonorColumn() {
+    const currentYear = new Date().getFullYear();
+    const yearOffset = currentYear - CONFIG.YEAR_DONOR_BASE_YEAR;
+    const colNumber = CONFIG.YEAR_DONOR_BASE_COL + (yearOffset * CONFIG.YEAR_DONOR_COL_STEP);
+    return columnNumberToLetter(colNumber);
+}

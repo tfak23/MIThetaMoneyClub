@@ -26,7 +26,7 @@ async function init() {
         allMembers = members;
         initializeSearch(members);
         renderLevelsGrid();
-        renderTopDonors();
+        renderTopDonorsCard();
         searchInput.disabled = false;
         searchInput.focus();
 
@@ -242,7 +242,22 @@ function renderLevelMembers(level) {
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function renderTopDonors() {
+function renderTopDonorsCard() {
+    const grid = document.getElementById('levels-grid');
+    if (!grid) return;
+
+    const card = document.createElement('div');
+    card.className = 'level-card top-donors-card';
+    card.innerHTML = `
+        <div class="top-donors-icon">&#9733;</div>
+        <h3 class="level-card-name">Top 10 Donors</h3>
+        <p class="level-card-range">All-Time Leaders</p>
+    `;
+    card.addEventListener('click', () => showTopDonorsList());
+    grid.appendChild(card);
+}
+
+function showTopDonorsList() {
     const container = document.getElementById('top-donors');
     if (!container) return;
 
@@ -254,24 +269,33 @@ function renderTopDonors() {
     if (topMembers.length === 0) return;
 
     container.innerHTML = `
-        <h2 class="section-title">Top 10 Donors</h2>
-        <div class="accent-divider accent-divider-center"></div>
-        <div class="top-donors-list">
-            ${topMembers.map((m, i) => {
-                const level = getGivingLevel(m.totalDonations);
-                const levelName = level ? level.name : '';
-                const nameClass = getMemberNameClass(m);
-                return `
-                    <div class="top-donor-item">
-                        <span class="top-donor-rank">${i + 1}</span>
-                        <span class="top-donor-name ${nameClass}">${escapeHtml(m.fullName)}</span>
-                        <span class="top-donor-level">${levelName}</span>
-                    </div>`;
-            }).join('')}
+        <div class="card level-members-card">
+            <div class="level-members-header">
+                <div class="top-donors-icon-large">&#9733;</div>
+                <div>
+                    <h2 class="level-members-title">Top 10 Donors</h2>
+                    <p class="level-members-count">All-Time Leaders</p>
+                </div>
+            </div>
+            <div class="accent-divider"></div>
+            <div class="top-donors-list">
+                ${topMembers.map((m, i) => {
+                    const level = getGivingLevel(m.totalDonations);
+                    const levelName = level ? level.name : '';
+                    const nameClass = getMemberNameClass(m);
+                    return `
+                        <div class="top-donor-item">
+                            <span class="top-donor-rank">${i + 1}</span>
+                            <span class="top-donor-name ${nameClass}">${escapeHtml(m.fullName)}</span>
+                            <span class="top-donor-level">${levelName}</span>
+                        </div>`;
+                }).join('')}
+            </div>
         </div>
     `;
 
     show(container);
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderFundProgress(fundData) {

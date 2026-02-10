@@ -1,19 +1,26 @@
 const CACHE_KEY = 'moneyclub_data';
 const CACHE_TS_KEY = 'moneyclub_cache_timestamp';
+const CACHE_VER_KEY = 'moneyclub_cache_version';
 
 function getCacheTTL() {
     return CONFIG.CACHE_TTL_DAYS * 24 * 60 * 60 * 1000;
 }
 
+function isCacheValid() {
+    const cachedVersion = localStorage.getItem(CACHE_VER_KEY);
+    return cachedVersion && parseInt(cachedVersion, 10) === CONFIG.CACHE_VERSION;
+}
+
 function buildApiUrl() {
     const cols = CONFIG.COLUMNS;
     const sheet = CONFIG.SHEET_NAME;
+    const donorCol = getCurrentYearDonorColumn();
     const ranges = [
         `${sheet}!${cols.ROLL_NUMBER}:${cols.ROLL_NUMBER}`,
         `${sheet}!${cols.FIRST_NAME}:${cols.FIRST_NAME}`,
         `${sheet}!${cols.LAST_NAME}:${cols.LAST_NAME}`,
         `${sheet}!${cols.TOTAL_DONATIONS}:${cols.TOTAL_DONATIONS}`,
-        `${sheet}!${cols.CURRENT_YEAR_DONOR}:${cols.CURRENT_YEAR_DONOR}`
+        `${sheet}!${donorCol}:${donorCol}`
     ];
     const rangeParams = ranges.map(r => `ranges=${encodeURIComponent(r)}`).join('&');
     return `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values:batchGet?${rangeParams}&valueRenderOption=UNFORMATTED_VALUE&key=${CONFIG.API_KEY}`;
@@ -45,7 +52,7 @@ function parseSheetResponse(data) {
             lastName = lastName.slice(0, -2).trim();
         }
 
-        // Detect current year donors (non-zero value in CW column)
+        // Detect current year donors (non-zero value in year column)
         const currentYearRaw = currentYearData[i]?.[0];
         const currentYearAmount = typeof currentYearRaw === 'number' ? currentYearRaw : parseFloat(currentYearRaw) || 0;
         const isCurrentYearDonor = currentYearAmount > 0;
@@ -94,7 +101,7 @@ async function fetchFundProgress() {
     const cachedData = localStorage.getItem(FUND_CACHE_KEY);
     const cachedTimestamp = localStorage.getItem(FUND_CACHE_TS_KEY);
 
-    if (cachedData && cachedTimestamp) {
+    if (cachedData && cachedTimestamp && isCacheValid()) {
         const age = Date.now() - new Date(cachedTimestamp).getTime();
         if (age < getCacheTTL()) {
             return JSON.parse(cachedData);
@@ -144,8 +151,8 @@ async function getMemberData() {
     const cachedData = localStorage.getItem(CACHE_KEY);
     const cachedTimestamp = localStorage.getItem(CACHE_TS_KEY);
 
-    // Use cache if fresh
-    if (cachedData && cachedTimestamp) {
+    // Use cache if fresh and version matches
+    if (cachedData && cachedTimestamp && isCacheValid()) {
         const age = Date.now() - new Date(cachedTimestamp).getTime();
         if (age < getCacheTTL()) {
             return { members: JSON.parse(cachedData), fromCache: true, cacheDate: cachedTimestamp };
@@ -158,6 +165,7 @@ async function getMemberData() {
         const now = new Date().toISOString();
         localStorage.setItem(CACHE_KEY, JSON.stringify(members));
         localStorage.setItem(CACHE_TS_KEY, now);
+        localStorage.setItem(CACHE_VER_KEY, String(CONFIG.CACHE_VERSION));
         return { members, fromCache: false, cacheDate: now };
     } catch (error) {
         // Fall back to stale cache if available
