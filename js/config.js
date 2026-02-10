@@ -6,7 +6,8 @@ const CONFIG = {
         ROLL_NUMBER: 'D',
         FIRST_NAME: 'E',
         LAST_NAME: 'F',
-        TOTAL_DONATIONS: 'EV' // Update this if the column moves
+        TOTAL_DONATIONS: 'EV', // Update this if the column moves
+        CURRENT_YEAR_DONOR: 'CW'
     },
     CACHE_TTL_DAYS: 7,
     SUMMARY: {

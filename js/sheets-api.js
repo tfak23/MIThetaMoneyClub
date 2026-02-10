@@ -12,31 +12,43 @@ function buildApiUrl() {
         `${sheet}!${cols.ROLL_NUMBER}:${cols.ROLL_NUMBER}`,
         `${sheet}!${cols.FIRST_NAME}:${cols.FIRST_NAME}`,
         `${sheet}!${cols.LAST_NAME}:${cols.LAST_NAME}`,
-        `${sheet}!${cols.TOTAL_DONATIONS}:${cols.TOTAL_DONATIONS}`
+        `${sheet}!${cols.TOTAL_DONATIONS}:${cols.TOTAL_DONATIONS}`,
+        `${sheet}!${cols.CURRENT_YEAR_DONOR}:${cols.CURRENT_YEAR_DONOR}`
     ];
     const rangeParams = ranges.map(r => `ranges=${encodeURIComponent(r)}`).join('&');
     return `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values:batchGet?${rangeParams}&valueRenderOption=UNFORMATTED_VALUE&key=${CONFIG.API_KEY}`;
 }
 
 function parseSheetResponse(data) {
-    if (!data.valueRanges || data.valueRanges.length < 4) {
+    if (!data.valueRanges || data.valueRanges.length < 5) {
         throw new Error('Unexpected API response format');
     }
 
-    const [rollData, firstNameData, lastNameData, donationData] = data.valueRanges.map(
+    const [rollData, firstNameData, lastNameData, donationData, currentYearData] = data.valueRanges.map(
         vr => vr.values || []
     );
 
     const members = [];
-    const maxRows = Math.max(rollData.length, firstNameData.length, lastNameData.length, donationData.length);
+    const maxRows = Math.max(rollData.length, firstNameData.length, lastNameData.length, donationData.length, currentYearData.length);
 
     // Start at index 1 to skip header row
     for (let i = 1; i < maxRows; i++) {
         const rollRaw = String(rollData[i]?.[0] || '').trim();
         const firstName = String(firstNameData[i]?.[0] || '').trim();
-        const lastName = String(lastNameData[i]?.[0] || '').trim();
+        let lastName = String(lastNameData[i]?.[0] || '').trim();
         const donationRaw = donationData[i]?.[0];
         const donation = typeof donationRaw === 'number' ? donationRaw : parseFloat(donationRaw) || 0;
+
+        // Detect deceased members (last name ends with **)
+        const isDeceased = lastName.endsWith('**');
+        if (isDeceased) {
+            lastName = lastName.slice(0, -2).trim();
+        }
+
+        // Detect current year donors (non-zero value in CW column)
+        const currentYearRaw = currentYearData[i]?.[0];
+        const currentYearAmount = typeof currentYearRaw === 'number' ? currentYearRaw : parseFloat(currentYearRaw) || 0;
+        const isCurrentYearDonor = currentYearAmount > 0;
 
         if (!firstName && !lastName) continue;
 
@@ -46,7 +58,9 @@ function parseSheetResponse(data) {
             firstName: firstName,
             lastName: lastName,
             fullName: `${firstName} ${lastName}`.trim(),
-            totalDonations: donation
+            totalDonations: donation,
+            isDeceased: isDeceased,
+            isCurrentYearDonor: isCurrentYearDonor
         });
     }
 

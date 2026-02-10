@@ -651,6 +651,117 @@ main {
 }
 
 /* ===========================
+   Deceased & Current Year Donor
+   =========================== */
+
+.deceased {
+    color: #00bcd4 !important;
+}
+
+.current-year-donor {
+    color: #d4a017 !important;
+}
+
+.in-memory {
+    font-style: italic;
+    color: #00bcd4;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+/* ===========================
+   Top 10 Donors
+   =========================== */
+
+.top-donors-section {
+    padding: 32px 20px;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.top-donors-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.top-donor-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--sigep-white);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 14px 20px;
+    text-align: left;
+}
+
+.top-donor-rank {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--sigep-red);
+    min-width: 28px;
+    text-align: center;
+}
+
+.top-donor-name {
+    font-weight: 600;
+    color: var(--sigep-dark);
+    flex: 1;
+}
+
+.top-donor-level {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--sigep-purple);
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* ===========================
+   Legend
+   =========================== */
+
+.legend-section {
+    padding: 24px 20px;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.legend-items {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--sigep-text-light);
+}
+
+.legend-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+}
+
+.legend-swatch.deceased {
+    background: #00bcd4;
+}
+
+.legend-swatch.current-year-donor {
+    background: #d4a017;
+}
+
+/* ===========================
    Footer
    =========================== */
 

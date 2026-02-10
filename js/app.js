@@ -26,6 +26,7 @@ async function init() {
         allMembers = members;
         initializeSearch(members);
         renderLevelsGrid();
+        renderTopDonors();
         searchInput.disabled = false;
         searchInput.focus();
 
@@ -97,9 +98,10 @@ function renderResultsList(results) {
         const member = result.item;
         const el = document.createElement('button');
         el.className = 'result-list-item';
+        const nameClass = getMemberNameClass(member);
         el.innerHTML = `
             <div class="result-list-info">
-                <span class="result-list-name">${escapeHtml(member.fullName)}</span>
+                <span class="result-list-name ${nameClass}">${escapeHtml(member.fullName)}</span>
                 <span class="result-list-roll">#${escapeHtml(member.roll)}</span>
             </div>
         `;
@@ -152,10 +154,16 @@ function renderResultCard(member) {
         levelNameHtml = `<p class="giving-level-name">No donations recorded</p>`;
     }
 
+    const nameClass = getMemberNameClass(member);
+    const inMemoryHtml = member.isDeceased
+        ? `<p class="in-memory">In Memory of Brother ${escapeHtml(member.fullName)}</p>`
+        : '';
+
     container.innerHTML = `
         <div class="card result-card">
             ${badgeHtml}
-            <h2 class="member-name">${escapeHtml(member.fullName)}</h2>
+            ${inMemoryHtml}
+            <h2 class="member-name ${nameClass}">${escapeHtml(member.fullName)}</h2>
             <p class="member-roll">Roll #${escapeHtml(member.roll)}</p>
             <div class="accent-divider"></div>
             <p class="donation-amount">${formatCurrency(member.totalDonations)}</p>
@@ -208,7 +216,7 @@ function renderLevelMembers(level) {
     const memberListHtml = membersInLevel.length > 0
         ? `<div class="level-members-list">
             ${membersInLevel.map(m => `
-                <div class="level-member-item">${escapeHtml(m.fullName)}</div>
+                <div class="level-member-item ${getMemberNameClass(m)}">${escapeHtml(m.fullName)}</div>
             `).join('')}
            </div>`
         : '<p class="no-results">No members at this giving level yet.</p>';
@@ -232,6 +240,38 @@ function renderLevelMembers(level) {
 
     show(container);
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderTopDonors() {
+    const container = document.getElementById('top-donors');
+    if (!container) return;
+
+    const topMembers = [...allMembers]
+        .filter(m => m.totalDonations > 0)
+        .sort((a, b) => b.totalDonations - a.totalDonations)
+        .slice(0, 10);
+
+    if (topMembers.length === 0) return;
+
+    container.innerHTML = `
+        <h2 class="section-title">Top 10 Donors</h2>
+        <div class="accent-divider accent-divider-center"></div>
+        <div class="top-donors-list">
+            ${topMembers.map((m, i) => {
+                const level = getGivingLevel(m.totalDonations);
+                const levelName = level ? level.name : '';
+                const nameClass = getMemberNameClass(m);
+                return `
+                    <div class="top-donor-item">
+                        <span class="top-donor-rank">${i + 1}</span>
+                        <span class="top-donor-name ${nameClass}">${escapeHtml(m.fullName)}</span>
+                        <span class="top-donor-level">${levelName}</span>
+                    </div>`;
+            }).join('')}
+        </div>
+    `;
+
+    show(container);
 }
 
 function renderFundProgress(fundData) {
@@ -282,6 +322,13 @@ function renderFundProgress(fundData) {
     `;
 
     show(container);
+}
+
+// Returns CSS class for member name styling (deceased takes priority over current-year donor)
+function getMemberNameClass(member) {
+    if (member.isDeceased) return 'deceased';
+    if (member.isCurrentYearDonor) return 'current-year-donor';
+    return '';
 }
 
 // Utility functions
