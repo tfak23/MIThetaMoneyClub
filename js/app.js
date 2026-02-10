@@ -392,6 +392,7 @@ function renderFundProgress(fundData) {
 function getMemberNameClass(member) {
     if (member.isDeceased) return 'deceased';
     if (member.isCurrentYearDonor) return 'current-year-donor';
+    if (member.isPreviousYearDonor) return 'previous-year-donor';
     return '';
 }
 

@@ -670,6 +670,10 @@ main {
     color: #d4a017 !important;
 }
 
+.previous-year-donor {
+    color: #7a4470 !important;
+}
+
 .in-memory {
     font-style: italic;
     color: #00bcd4;
@@ -854,6 +858,10 @@ main {
 
 .legend-swatch.current-year-donor {
     background: #d4a017;
+}
+
+.legend-swatch.previous-year-donor {
+    background: #7a4470;
 }
 
 /* ===========================

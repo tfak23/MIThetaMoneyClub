@@ -13,7 +13,7 @@ const CONFIG = {
     YEAR_DONOR_BASE_COL: 101, // CW = column 101
     YEAR_DONOR_COL_STEP: 6,
     CACHE_TTL_DAYS: 7,
-    CACHE_VERSION: 2, // Increment to force cache refresh when data structure changes
+    CACHE_VERSION: 3, // Increment to force cache refresh when data structure changes
     SUMMARY: {
         SHEET_NAME: 'Summary',
         AS_OF_DATE: 'J2',
@@ -35,10 +35,19 @@ function columnNumberToLetter(n) {
     return result;
 }
 
-// Get the column letter for the current year's donor data
-function getCurrentYearDonorColumn() {
-    const currentYear = new Date().getFullYear();
-    const yearOffset = currentYear - CONFIG.YEAR_DONOR_BASE_YEAR;
+// Get the column letter for a given year's donor data
+function getYearDonorColumn(year) {
+    const yearOffset = year - CONFIG.YEAR_DONOR_BASE_YEAR;
     const colNumber = CONFIG.YEAR_DONOR_BASE_COL + (yearOffset * CONFIG.YEAR_DONOR_COL_STEP);
     return columnNumberToLetter(colNumber);
+}
+
+// Get the column letter for the current year's donor data
+function getCurrentYearDonorColumn() {
+    return getYearDonorColumn(new Date().getFullYear());
+}
+
+// Get the column letter for the previous year's donor data
+function getPreviousYearDonorColumn() {
+    return getYearDonorColumn(new Date().getFullYear() - 1);
 }

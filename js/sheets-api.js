@@ -15,28 +15,30 @@ function buildApiUrl() {
     const cols = CONFIG.COLUMNS;
     const sheet = CONFIG.SHEET_NAME;
     const donorCol = getCurrentYearDonorColumn();
+    const prevDonorCol = getPreviousYearDonorColumn();
     const ranges = [
         `${sheet}!${cols.ROLL_NUMBER}:${cols.ROLL_NUMBER}`,
         `${sheet}!${cols.FIRST_NAME}:${cols.FIRST_NAME}`,
         `${sheet}!${cols.LAST_NAME}:${cols.LAST_NAME}`,
         `${sheet}!${cols.TOTAL_DONATIONS}:${cols.TOTAL_DONATIONS}`,
-        `${sheet}!${donorCol}:${donorCol}`
+        `${sheet}!${donorCol}:${donorCol}`,
+        `${sheet}!${prevDonorCol}:${prevDonorCol}`
     ];
     const rangeParams = ranges.map(r => `ranges=${encodeURIComponent(r)}`).join('&');
     return `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values:batchGet?${rangeParams}&valueRenderOption=UNFORMATTED_VALUE&key=${CONFIG.API_KEY}`;
 }
 
 function parseSheetResponse(data) {
-    if (!data.valueRanges || data.valueRanges.length < 5) {
+    if (!data.valueRanges || data.valueRanges.length < 6) {
         throw new Error('Unexpected API response format');
     }
 
-    const [rollData, firstNameData, lastNameData, donationData, currentYearData] = data.valueRanges.map(
+    const [rollData, firstNameData, lastNameData, donationData, currentYearData, prevYearData] = data.valueRanges.map(
         vr => vr.values || []
     );
 
     const members = [];
-    const maxRows = Math.max(rollData.length, firstNameData.length, lastNameData.length, donationData.length, currentYearData.length);
+    const maxRows = Math.max(rollData.length, firstNameData.length, lastNameData.length, donationData.length, currentYearData.length, prevYearData.length);
 
     // Start at index 1 to skip header row
     for (let i = 1; i < maxRows; i++) {
@@ -57,6 +59,11 @@ function parseSheetResponse(data) {
         const currentYearAmount = typeof currentYearRaw === 'number' ? currentYearRaw : parseFloat(currentYearRaw) || 0;
         const isCurrentYearDonor = currentYearAmount > 0;
 
+        // Detect previous year donors
+        const prevYearRaw = prevYearData[i]?.[0];
+        const prevYearAmount = typeof prevYearRaw === 'number' ? prevYearRaw : parseFloat(prevYearRaw) || 0;
+        const isPreviousYearDonor = prevYearAmount > 0;
+
         if (!firstName && !lastName) continue;
 
         members.push({
@@ -67,7 +74,8 @@ function parseSheetResponse(data) {
             fullName: `${firstName} ${lastName}`.trim(),
             totalDonations: donation,
             isDeceased: isDeceased,
-            isCurrentYearDonor: isCurrentYearDonor
+            isCurrentYearDonor: isCurrentYearDonor,
+            isPreviousYearDonor: isPreviousYearDonor
         });
     }
 
