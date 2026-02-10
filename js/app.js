@@ -247,10 +247,9 @@ function renderTopDonorsCard() {
     if (!container) return;
 
     container.innerHTML = `
-        <div class="level-card top-donors-card">
+        <div class="top-donors-card-btn">
             <div class="top-donors-icon">&#9733;</div>
-            <h3 class="level-card-name">Top 10 Donors</h3>
-            <p class="level-card-range">All-Time Leaders</p>
+            <h3 class="top-donors-btn-label">Top 10 Donors</h3>
         </div>
     `;
     container.addEventListener('click', () => showTopDonorsList());
@@ -274,7 +273,6 @@ function showTopDonorsList() {
                 <div class="top-donors-icon-large">&#9733;</div>
                 <div>
                     <h2 class="level-members-title">Top 10 Donors</h2>
-                    <p class="level-members-count">All-Time Leaders</p>
                 </div>
             </div>
             <div class="accent-divider"></div>
