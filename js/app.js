@@ -156,7 +156,7 @@ function renderResultCard(member) {
 
     const nameClass = getMemberNameClass(member);
     const inMemoryHtml = member.isDeceased
-        ? `<p class="in-memory">In Memory of Brother ${escapeHtml(member.fullName)}</p>`
+        ? `<p class="in-memory">In Loving Memory of Brother</p>`
         : '';
 
     container.innerHTML = `
@@ -243,18 +243,18 @@ function renderLevelMembers(level) {
 }
 
 function renderTopDonorsCard() {
-    const grid = document.getElementById('levels-grid');
-    if (!grid) return;
+    const container = document.getElementById('top-donors-btn');
+    if (!container) return;
 
-    const card = document.createElement('div');
-    card.className = 'level-card top-donors-card';
-    card.innerHTML = `
-        <div class="top-donors-icon">&#9733;</div>
-        <h3 class="level-card-name">Top 10 Donors</h3>
-        <p class="level-card-range">All-Time Leaders</p>
+    container.innerHTML = `
+        <div class="level-card top-donors-card">
+            <div class="top-donors-icon">&#9733;</div>
+            <h3 class="level-card-name">Top 10 Donors</h3>
+            <p class="level-card-range">All-Time Leaders</p>
+        </div>
     `;
-    card.addEventListener('click', () => showTopDonorsList());
-    grid.appendChild(card);
+    container.addEventListener('click', () => showTopDonorsList());
+    show(container);
 }
 
 function showTopDonorsList() {

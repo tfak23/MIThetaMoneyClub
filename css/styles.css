@@ -673,6 +673,19 @@ main {
    Top 10 Donors
    =========================== */
 
+.top-donors-btn-section {
+    display: flex;
+    justify-content: center;
+    padding: 16px 20px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.top-donors-btn-section .top-donors-card {
+    max-width: 200px;
+    width: 100%;
+}
+
 .top-donors-card {
     background: linear-gradient(135deg, #fef9e7, #fff8e1);
     border: 2px solid #d4a017;
