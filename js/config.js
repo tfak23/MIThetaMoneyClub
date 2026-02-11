@@ -22,6 +22,18 @@ const CONFIG = {
         LEADERSHIP_GOAL: 'K4',
         BMS_TOTAL: 'J5',
         BMS_GOAL: 'K5'
+    },
+    SCHOLARSHIPS: {
+        SPREADSHEET_ID: '1VxjgaGdfaXiYrRh21u2SaKgHMkrrgaehFLUH_ZEqGxE',
+        SHEET_NAME: 'Merit Scholarships',
+        JUREWICZ: {
+            PURPOSE: 'A4',
+            RECIPIENTS: 'A7:A33'
+        },
+        TAGGART: {
+            PURPOSE: 'A36',
+            RECIPIENTS: 'A38:A58'
+        }
     }
 };
 

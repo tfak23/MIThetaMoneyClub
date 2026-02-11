@@ -5,6 +5,8 @@ let allMembers = [];
 // Track which panel is currently open for toggle behavior
 let openLevelName = null;
 let topDonorsOpen = false;
+let scholarshipData = null;
+let openScholarshipKey = null;
 
 async function init() {
     const searchInput = document.getElementById('search-input');
@@ -348,8 +350,8 @@ function renderFundProgress(fundData) {
     ];
 
     const completedFunds = [
-        { name: 'John Jurewicz II Burning Heart Scholarship', total: 25000, goal: 25000, completed: true },
-        { name: 'Patrick J. Taggart Jr. Passion Scholarship', total: 62500, goal: 62500, completed: true },
+        { name: 'John Jurewicz II Burning Heart Scholarship', total: 25000, goal: 25000, completed: true, scholarshipKey: 'jurewicz' },
+        { name: 'Patrick J. Taggart Jr. Passion Scholarship', total: 62500, goal: 62500, completed: true, scholarshipKey: 'taggart' },
     ];
 
     const allFunds = [...activeFunds, ...completedFunds];
@@ -365,8 +367,9 @@ function renderFundProgress(fundData) {
                 const pct = Math.min((fund.total / fund.goal) * 100, 100);
                 const fillClass = fund.completed ? 'progress-bar-fill-completed' : 'progress-bar-fill';
                 const label = fund.completed ? 'Completed' : `${Math.round(pct)}%`;
+                const clickableClass = fund.completed ? ' fund-bar-clickable' : '';
                 return `
-                    <div class="fund-bar-item">
+                    <div class="fund-bar-item${clickableClass}" ${fund.scholarshipKey ? `data-scholarship="${fund.scholarshipKey}"` : ''}>
                         <div class="fund-bar-header">
                             <span class="fund-bar-name">${fund.name}</span>
                             ${fund.completed ? '<span class="fund-completed-badge">Completed</span>' : ''}
@@ -380,12 +383,71 @@ function renderFundProgress(fundData) {
                             <span>${formatCurrency(fund.total)} raised</span>
                             <span>Goal: ${formatCurrency(fund.goal)}</span>
                         </div>
+                        ${fund.completed ? '<p class="fund-bar-hint">Click to view scholarship details</p>' : ''}
                     </div>`;
             }).join('')}
         </div>
     `;
 
+    // Add click listeners to completed fund bars
+    container.querySelectorAll('.fund-bar-clickable').forEach(el => {
+        el.addEventListener('click', () => {
+            const key = el.getAttribute('data-scholarship');
+            if (key) showScholarshipDetail(key);
+        });
+    });
+
     show(container);
+}
+
+async function showScholarshipDetail(key) {
+    const container = document.getElementById('scholarship-detail');
+    if (!container) return;
+
+    // Toggle: clicking same scholarship again closes it
+    if (openScholarshipKey === key && !container.classList.contains('hidden')) {
+        hide(container);
+        openScholarshipKey = null;
+        return;
+    }
+    openScholarshipKey = key;
+
+    // Lazy load scholarship data
+    if (!scholarshipData) {
+        container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading scholarship data...</p></div>';
+        show(container);
+        try {
+            scholarshipData = await fetchScholarshipData();
+        } catch (err) {
+            container.innerHTML = '<p class="no-results">Unable to load scholarship data.</p>';
+            show(container);
+            return;
+        }
+    }
+
+    const info = scholarshipData[key];
+    if (!info) return;
+
+    const title = key === 'jurewicz'
+        ? 'John Jurewicz II Burning Heart Scholarship'
+        : 'Patrick J. Taggart Jr. Passion Scholarship';
+
+    container.innerHTML = `
+        <div class="card scholarship-card">
+            <h2 class="scholarship-title">${title}</h2>
+            <div class="accent-divider"></div>
+            <p class="scholarship-purpose">${escapeHtml(info.purpose)}</p>
+            <h3 class="scholarship-recipients-heading">Past Recipients</h3>
+            <div class="scholarship-recipients">
+                ${info.recipients.map(r => `
+                    <div class="scholarship-recipient">${escapeHtml(r)}</div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    show(container);
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // Returns CSS class for member name styling (deceased takes priority over current-year donor)

@@ -543,6 +543,82 @@ main {
     color: var(--sigep-text-light);
 }
 
+.fund-bar-clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fund-bar-clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+}
+
+.fund-bar-hint {
+    font-size: 0.7rem;
+    color: var(--sigep-text-light);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* ===========================
+   Scholarship Detail
+   =========================== */
+
+.scholarship-detail-section {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 20px 24px;
+}
+
+.scholarship-card {
+    padding: 32px;
+}
+
+.scholarship-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--sigep-dark);
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.scholarship-purpose {
+    font-style: italic;
+    color: var(--sigep-text-light);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.scholarship-recipients-heading {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--sigep-dark);
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.scholarship-recipients {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.scholarship-recipient {
+    text-align: center;
+    padding: 10px 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--sigep-dark);
+    background: linear-gradient(135deg, #faf6f0, #f5efe6);
+    border: 1px solid #d4c5a9;
+    border-radius: 4px;
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.5px;
+}
+
 /* ===========================
    Giving Levels Grid
    =========================== */
@@ -911,6 +987,10 @@ main {
     .levels-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
+    }
+
+    .scholarship-recipients {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .level-card {

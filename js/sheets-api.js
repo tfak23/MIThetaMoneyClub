@@ -160,6 +160,67 @@ async function fetchFundProgress() {
     return fundData;
 }
 
+const SCHOLARSHIP_CACHE_KEY = 'moneyclub_scholarship_data';
+const SCHOLARSHIP_CACHE_TS_KEY = 'moneyclub_scholarship_cache_timestamp';
+
+async function fetchScholarshipData() {
+    const cachedData = localStorage.getItem(SCHOLARSHIP_CACHE_KEY);
+    const cachedTimestamp = localStorage.getItem(SCHOLARSHIP_CACHE_TS_KEY);
+
+    if (cachedData && cachedTimestamp && isCacheValid()) {
+        const age = Date.now() - new Date(cachedTimestamp).getTime();
+        if (age < getCacheTTL()) {
+            return JSON.parse(cachedData);
+        }
+    }
+
+    if (!CONFIG.API_KEY || CONFIG.API_KEY === 'YOUR_API_KEY_HERE') {
+        throw new Error('API_KEY_NOT_CONFIGURED');
+    }
+
+    const s = CONFIG.SCHOLARSHIPS;
+    const sheet = s.SHEET_NAME;
+    const ranges = [
+        `${sheet}!${s.JUREWICZ.PURPOSE}`,
+        `${sheet}!${s.JUREWICZ.RECIPIENTS}`,
+        `${sheet}!${s.TAGGART.PURPOSE}`,
+        `${sheet}!${s.TAGGART.RECIPIENTS}`
+    ];
+    const rangeParams = ranges.map(r => `ranges=${encodeURIComponent(r)}`).join('&');
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${s.SPREADSHEET_ID}/values:batchGet?${rangeParams}&valueRenderOption=FORMATTED_VALUE&key=${CONFIG.API_KEY}`;
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Scholarship data fetch failed: ${response.status}`);
+
+    const data = await response.json();
+    const vr = data.valueRanges;
+
+    const getPurpose = (range) => (range.values && range.values[0] && range.values[0][0]) || '';
+    const getRecipients = (range) => {
+        if (!range.values) return [];
+        return range.values
+            .map(row => (row[0] || '').trim())
+            .filter(val => val.length > 0);
+    };
+
+    const scholarshipData = {
+        jurewicz: {
+            purpose: getPurpose(vr[0]),
+            recipients: getRecipients(vr[1])
+        },
+        taggart: {
+            purpose: getPurpose(vr[2]),
+            recipients: getRecipients(vr[3])
+        }
+    };
+
+    const now = new Date().toISOString();
+    localStorage.setItem(SCHOLARSHIP_CACHE_KEY, JSON.stringify(scholarshipData));
+    localStorage.setItem(SCHOLARSHIP_CACHE_TS_KEY, now);
+
+    return scholarshipData;
+}
+
 async function getMemberData() {
     const cachedData = localStorage.getItem(CACHE_KEY);
     const cachedTimestamp = localStorage.getItem(CACHE_TS_KEY);
