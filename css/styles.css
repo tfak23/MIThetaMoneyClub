@@ -1214,6 +1214,51 @@ main {
     .result-list-item {
         padding: 12px 16px;
     }
+
+    /* Decades Battle - Mobile */
+    .chart-container {
+        gap: 4px;
+        padding: 8px 2px 0;
+        min-height: 160px;
+    }
+
+    .chart-group {
+        min-width: 42px;
+        max-width: 55px;
+    }
+
+    .chart-bars {
+        gap: 2px;
+        height: 130px;
+    }
+
+    .chart-bar-wrapper {
+        max-width: 20px;
+    }
+
+    .chart-bar-value {
+        font-size: 0.55rem;
+        margin-bottom: 2px;
+    }
+
+    .chart-label {
+        font-size: 0.6rem;
+        padding: 6px 0 8px;
+    }
+
+    .chart-legend {
+        gap: 12px;
+        margin: 12px 0 6px;
+    }
+
+    .chart-legend-item {
+        font-size: 0.68rem;
+    }
+
+    .chart-legend-swatch {
+        width: 12px;
+        height: 12px;
+    }
 }
 
 @media (min-width: 601px) and (max-width: 1024px) {
