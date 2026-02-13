@@ -395,36 +395,45 @@ function showDecadeLeaderboard() {
 
     // Calculate grand total for percentages
     const grandTotal = sorted.reduce((sum, d) => sum + d.total, 0);
+    const maxPct = grandTotal > 0 ? (sorted[0].total / grandTotal) * 100 : 0;
 
     container.innerHTML = `
         <div class="card level-members-card">
             <div class="level-members-header">
-                <div class="decade-icon-large">&#127939;</div>
+                <div class="decade-icon-large">&#9876;&#65039;</div>
                 <div>
-                    <h2 class="level-members-title">Donations by Decade</h2>
+                    <h2 class="level-members-title">Decades Battle</h2>
                 </div>
             </div>
             <div class="accent-divider"></div>
-            <div class="race-track">
-                <div class="race-finish-line"></div>
-                ${sorted.map((d, i) => {
-                    const sharePct = grandTotal > 0 ? ((d.total / grandTotal) * 100).toFixed(1) : '0.0';
-                    const runnerPos = grandTotal > 0 ? (d.total / maxTotal) * 100 : 0;
-                    const isZero = d.total === 0;
-                    const isLeader = i === 0 && d.total > 0;
-                    const crownHtml = isLeader ? '<span class="race-crown">&#128081;</span>' : '';
-                    return `
-                        <div class="race-lane${isLeader ? ' race-lane-leader' : ''}${i % 2 === 0 ? ' race-lane-even' : ' race-lane-odd'}">
-                            <div class="race-bib">${escapeHtml(d.label)}</div>
-                            <div class="race-track-surface">
-                                <div class="race-runner-wrapper" style="left: ${isZero ? 0 : runnerPos}%">
-                                    ${crownHtml}
-                                    <span class="race-runner${isLeader ? ' race-runner-leader' : ''}">&#127939;</span>
-                                    <span class="race-stat">${isZero ? '<em>On your marks!</em>' : sharePct + '%'}</span>
+            <div class="banner-field">
+                <div class="banner-row">
+                    ${sorted.map((d, i) => {
+                        const sharePct = grandTotal > 0 ? ((d.total / grandTotal) * 100).toFixed(1) : '0.0';
+                        const heightPct = maxPct > 0 && d.total > 0 ? (parseFloat(sharePct) / maxPct) * 100 : 0;
+                        const isZero = d.total === 0;
+                        const isLeader = i === 0 && d.total > 0;
+                        const crownHtml = isLeader ? '<div class="banner-crown">&#128081;</div>' : '';
+                        const donorCount = d.donors || 0;
+                        return `
+                            <div class="banner-column">
+                                <div class="banner-pct">${isZero ? '' : sharePct + '%'}</div>
+                                ${crownHtml}
+                                <div class="banner-pole">
+                                    <div class="banner-flag${isLeader ? ' banner-flag-leader' : ''}${isZero ? ' banner-flag-zero' : ''}" style="height: ${isZero ? 0 : heightPct}%">
+                                        <span class="banner-flag-label">${escapeHtml(d.label)}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>`;
-                }).join('')}
+                                <div class="banner-base">
+                                    <span class="banner-decade-name">${escapeHtml(d.label)}</span>
+                                    ${isZero
+                                        ? '<span class="banner-cta">Rally the troops!</span>'
+                                        : `<span class="banner-donors">&#9876;&#65039; ${donorCount} Donor${donorCount !== 1 ? 's' : ''}</span>`
+                                    }
+                                </div>
+                            </div>`;
+                    }).join('')}
+                </div>
             </div>
         </div>
     `;
