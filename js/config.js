@@ -24,7 +24,8 @@ const CONFIG = {
         BMS_TOTAL: 'J5',
         BMS_GOAL: 'K5',
         DECADE_LABELS: 'A3:A9',
-        DECADE_TOTALS: 'B3:B9'
+        DECADE_TOTALS: 'B3:B9',
+        DECADE_DONORS: 'E3:E9'
     },
     SCHOLARSHIPS: {
         SPREADSHEET_ID: '1VxjgaGdfaXiYrRh21u2SaKgHMkrrgaehFLUH_ZEqGxE',

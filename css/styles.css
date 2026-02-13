@@ -993,130 +993,148 @@ main {
     padding: 0 20px;
 }
 
-/* --- Race Track --- */
+/* --- War Banners --- */
 
-.race-track {
-    position: relative;
+.banner-field {
     margin-top: 20px;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 2px solid #5a3e2b;
-    background: #5a3e2b;
+    padding: 20px 0 0;
+    overflow-x: auto;
 }
 
-.race-finish-line {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    width: 14px;
-    z-index: 2;
-    background: repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 0 0 / 7px 7px;
-}
-
-.race-lane {
+.banner-row {
     display: flex;
-    align-items: center;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
-    position: relative;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+    min-height: 280px;
+    padding: 0 8px;
 }
 
-.race-lane:last-child {
-    border-bottom: none;
-}
-
-.race-lane-even {
-    background: #d4574a;
-}
-
-.race-lane-odd {
-    background: #b83d30;
-}
-
-.race-lane-leader {
-    background: linear-gradient(90deg, #c9942e 0%, #d4a017 30%, #e8c547 100%) !important;
-}
-
-.race-bib {
-    width: 100px;
-    flex-shrink: 0;
-    padding: 12px 10px;
-    font-weight: 800;
-    font-size: 0.8rem;
-    color: #fff;
-    text-align: center;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    background: rgba(0, 0, 0, 0.2);
-    letter-spacing: 0.02em;
-}
-
-.race-lane-leader .race-bib {
-    color: #2d1a00;
-    text-shadow: none;
-    background: rgba(0, 0, 0, 0.1);
-}
-
-.race-track-surface {
-    flex: 1;
-    position: relative;
-    height: 56px;
-    /* lane lines */
-    background: repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 48px,
-        rgba(255, 255, 255, 0.08) 48px,
-        rgba(255, 255, 255, 0.08) 50px
-    );
-}
-
-.race-runner-wrapper {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
+.banner-column {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0;
-    transition: left 1s cubic-bezier(0.22, 1, 0.36, 1);
-    z-index: 1;
+    flex: 1;
+    min-width: 48px;
+    max-width: 85px;
+}
+
+.banner-pct {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--sigep-purple);
+    margin-bottom: 4px;
+    min-height: 18px;
+}
+
+.banner-crown {
+    font-size: 1rem;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.banner-pole {
+    width: 6px;
+    height: 180px;
+    background: linear-gradient(to bottom, #888, #aaa);
+    border-radius: 3px 3px 0 0;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    box-shadow: 1px 0 3px rgba(0,0,0,0.2);
+}
+
+.banner-pole::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, #d4a017, #a07c1a);
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(212, 160, 23, 0.5);
+}
+
+.banner-flag {
+    position: absolute;
+    bottom: 0;
+    left: 6px;
+    width: 42px;
+    border-radius: 0 4px 4px 0;
+    background: linear-gradient(180deg, var(--sigep-red) 0%, #b71c1c 100%);
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: height 1s cubic-bezier(0.22, 1, 0.36, 1);
+    min-height: 0;
+}
+
+.banner-flag::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15), transparent);
+}
+
+.banner-flag-leader {
+    width: 48px;
+    background: linear-gradient(180deg, #d4a017 0%, #b8860b 100%);
+    box-shadow: 2px 2px 8px rgba(212, 160, 23, 0.4);
+}
+
+.banner-flag-zero {
+    height: 0 !important;
+    background: transparent;
+    box-shadow: none;
+}
+
+.banner-flag-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 0.55rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+    padding: 4px 0;
+}
+
+.banner-base {
+    margin-top: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.banner-decade-name {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--sigep-dark);
+    line-height: 1.2;
+}
+
+.banner-donors {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--sigep-text-light);
     white-space: nowrap;
 }
 
-.race-runner {
-    font-size: 1.8rem;
-    line-height: 1;
-    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.4));
-    transform: scaleX(-1);
-}
-
-.race-runner-leader {
-    font-size: 2.2rem;
-}
-
-.race-crown {
-    font-size: 0.9rem;
-    line-height: 1;
-    margin-bottom: -4px;
-}
-
-.race-stat {
-    font-size: 0.7rem;
-    font-weight: 800;
-    color: #fff;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-    margin-top: -2px;
-}
-
-.race-stat em {
-    font-weight: 600;
-    font-size: 0.6rem;
-    opacity: 0.85;
-}
-
-.race-lane-leader .race-stat {
-    color: #2d1a00;
-    text-shadow: 0 1px 2px rgba(255,255,255,0.4);
+.banner-cta {
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: var(--sigep-red);
+    font-style: italic;
+    white-space: nowrap;
 }
 
 /* ===========================

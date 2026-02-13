@@ -272,7 +272,8 @@ async function fetchDecadeData() {
 
     const ranges = [
         `${SUMMARY.SHEET_NAME}!${SUMMARY.DECADE_LABELS}`,
-        `${SUMMARY.SHEET_NAME}!${SUMMARY.DECADE_TOTALS}`
+        `${SUMMARY.SHEET_NAME}!${SUMMARY.DECADE_TOTALS}`,
+        `${SUMMARY.SHEET_NAME}!${SUMMARY.DECADE_DONORS}`
     ];
 
     const url = sheetsBatchUrl(SPREADSHEET_ID, ranges);
@@ -285,6 +286,7 @@ async function fetchDecadeData() {
 
     const labels = vr[0]?.values || [];
     const totals = vr[1]?.values || [];
+    const donors = vr[2]?.values || [];
 
     const decades = [];
     const maxLen = Math.max(labels.length, totals.length);
@@ -292,8 +294,9 @@ async function fetchDecadeData() {
     for (let i = 0; i < maxLen; i++) {
         const label = String(labels[i]?.[0] || '').trim();
         const total = parseFloat(String(totals[i]?.[0] || '0').replace(/[$,]/g, '')) || 0;
+        const donorCount = parseInt(String(donors[i]?.[0] || '0').replace(/,/g, ''), 10) || 0;
         if (label) {
-            decades.push({ label, total });
+            decades.push({ label, total, donors: donorCount });
         }
     }
 

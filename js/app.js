@@ -363,8 +363,8 @@ function renderDecadeCard() {
 
     container.innerHTML = `
         <div class="decade-card-btn">
-            <div class="decade-icon">&#127939;</div>
-            <h3 class="decade-btn-label">Donations by Decade</h3>
+            <div class="decade-icon">&#9876;&#65039;</div>
+            <h3 class="decade-btn-label">Decades Battle</h3>
         </div>
     `;
     container.addEventListener('click', () => showDecadeLeaderboard());
