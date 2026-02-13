@@ -395,7 +395,10 @@ function showDecadeLeaderboard() {
 
     // Calculate grand total for percentages
     const grandTotal = sorted.reduce((sum, d) => sum + d.total, 0);
-    const maxPct = grandTotal > 0 ? (sorted[0].total / grandTotal) * 100 : 0;
+
+    // Find max values for scaling
+    const maxPct = grandTotal > 0 ? (sorted[0].total / grandTotal) * 100 : 1;
+    const maxDonors = Math.max(...sorted.map(d => d.donors || 0), 1);
 
     container.innerHTML = `
         <div class="card level-members-card">
@@ -406,31 +409,32 @@ function showDecadeLeaderboard() {
                 </div>
             </div>
             <div class="accent-divider"></div>
-            <div class="banner-field">
-                <div class="banner-row">
-                    ${sorted.map((d, i) => {
-                        const sharePct = grandTotal > 0 ? ((d.total / grandTotal) * 100).toFixed(1) : '0.0';
-                        const heightPct = maxPct > 0 && d.total > 0 ? (parseFloat(sharePct) / maxPct) * 100 : 0;
-                        const isZero = d.total === 0;
-                        const donorCount = d.donors || 0;
-                        return `
-                            <div class="banner-column">
-                                <div class="banner-pole">
-                                    <div class="banner-flag${isZero ? ' banner-flag-zero' : ''}" style="height: ${isZero ? 0 : heightPct}%">
-                                        <span class="banner-flag-pct">${isZero ? '' : sharePct + '%'}</span>
-                                        <div class="banner-flag-tip"></div>
-                                    </div>
+            <div class="chart-legend">
+                <span class="chart-legend-item"><span class="chart-legend-swatch chart-legend-pct"></span>% of Donations</span>
+                <span class="chart-legend-item"><span class="chart-legend-swatch chart-legend-donors"></span># of Donors</span>
+            </div>
+            <div class="chart-container">
+                ${sorted.map((d, i) => {
+                    const sharePct = grandTotal > 0 ? ((d.total / grandTotal) * 100).toFixed(1) : '0.0';
+                    const pctHeight = grandTotal > 0 && d.total > 0 ? (parseFloat(sharePct) / maxPct) * 100 : 0;
+                    const donorCount = d.donors || 0;
+                    const donorHeight = donorCount > 0 ? (donorCount / maxDonors) * 100 : 0;
+                    const isZero = d.total === 0;
+                    return `
+                        <div class="chart-group">
+                            <div class="chart-bars">
+                                <div class="chart-bar-wrapper">
+                                    <span class="chart-bar-value chart-val-pct">${isZero ? '0%' : sharePct + '%'}</span>
+                                    <div class="chart-bar chart-bar-pct" style="height: ${pctHeight}%"></div>
                                 </div>
-                                <div class="banner-base">
-                                    <span class="banner-decade-name">${escapeHtml(d.label)}</span>
-                                    ${isZero
-                                        ? '<span class="banner-cta">Rally the<br>troops!</span>'
-                                        : `<span class="banner-donors">${donorCount} Donor${donorCount !== 1 ? 's' : ''}</span>`
-                                    }
+                                <div class="chart-bar-wrapper">
+                                    <span class="chart-bar-value chart-val-donors">${donorCount}</span>
+                                    <div class="chart-bar chart-bar-donors" style="height: ${donorHeight}%"></div>
                                 </div>
-                            </div>`;
-                    }).join('')}
-                </div>
+                            </div>
+                            <span class="chart-label">${escapeHtml(d.label)}</span>
+                        </div>`;
+                }).join('')}
             </div>
         </div>
     `;
