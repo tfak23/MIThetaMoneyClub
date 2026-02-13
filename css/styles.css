@@ -607,19 +607,33 @@ main {
 }
 
 .scholarship-recipient {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 12px 10px 10px;
+    padding: 16px 14px 14px;
     color: #1a1a1a;
     background: linear-gradient(160deg, #e8d48a, #c9a84c 30%, #dfc36e 50%, #c9a84c 70%, #b8943f);
-    border: 2px solid #a07c30;
-    border-radius: 3px;
     font-family: 'Georgia', serif;
     letter-spacing: 0.5px;
-    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    --r: 10px;
+    mask:
+        radial-gradient(circle var(--r) at 0 0, transparent 98%, #000) top left,
+        radial-gradient(circle var(--r) at 100% 0, transparent 98%, #000) top right,
+        radial-gradient(circle var(--r) at 0 100%, transparent 98%, #000) bottom left,
+        radial-gradient(circle var(--r) at 100% 100%, transparent 98%, #000) bottom right;
+    mask-size: 51% 51%;
+    mask-repeat: no-repeat;
+    -webkit-mask:
+        radial-gradient(circle var(--r) at 0 0, transparent 98%, #000) top left,
+        radial-gradient(circle var(--r) at 100% 0, transparent 98%, #000) top right,
+        radial-gradient(circle var(--r) at 0 100%, transparent 98%, #000) bottom left,
+        radial-gradient(circle var(--r) at 100% 100%, transparent 98%, #000) bottom right;
+    -webkit-mask-size: 51% 51%;
+    -webkit-mask-repeat: no-repeat;
 }
 
 .recipient-name {
