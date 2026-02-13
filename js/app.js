@@ -440,7 +440,10 @@ async function showScholarshipDetail(key) {
             <h3 class="scholarship-recipients-heading">Past Recipients</h3>
             <div class="scholarship-recipients">
                 ${info.recipients.map(r => `
-                    <div class="scholarship-recipient">${escapeHtml(r)}</div>
+                    <div class="scholarship-recipient">
+                        <span class="recipient-name">${escapeHtml(r.name)}</span>
+                        ${r.year ? `<span class="recipient-year">${escapeHtml(r.year)}</span>` : ''}
+                    </div>
                 `).join('')}
             </div>
         </div>

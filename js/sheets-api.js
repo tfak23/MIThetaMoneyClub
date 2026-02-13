@@ -182,9 +182,11 @@ async function fetchScholarshipData() {
     const sheet = s.SHEET_NAME;
     const ranges = [
         `${sheet}!${s.JUREWICZ.PURPOSE}`,
-        `${sheet}!${s.JUREWICZ.RECIPIENTS}`,
+        `${sheet}!${s.JUREWICZ.NAMES}`,
+        `${sheet}!${s.JUREWICZ.YEARS}`,
         `${sheet}!${s.TAGGART.PURPOSE}`,
-        `${sheet}!${s.TAGGART.RECIPIENTS}`
+        `${sheet}!${s.TAGGART.NAMES}`,
+        `${sheet}!${s.TAGGART.YEARS}`
     ];
     const rangeParams = ranges.map(r => `ranges=${encodeURIComponent(r)}`).join('&');
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${s.SPREADSHEET_ID}/values:batchGet?${rangeParams}&valueRenderOption=FORMATTED_VALUE&key=${CONFIG.API_KEY}`;
@@ -196,21 +198,29 @@ async function fetchScholarshipData() {
     const vr = data.valueRanges;
 
     const getPurpose = (range) => (range.values && range.values[0] && range.values[0][0]) || '';
-    const getRecipients = (range) => {
-        if (!range.values) return [];
-        return range.values
-            .map(row => (row[0] || '').trim())
-            .filter(val => val.length > 0);
+    const getRecipients = (namesRange, yearsRange) => {
+        const names = namesRange.values || [];
+        const years = yearsRange.values || [];
+        const recipients = [];
+        const maxLen = Math.max(names.length, years.length);
+        for (let i = 0; i < maxLen; i++) {
+            const name = (names[i]?.[0] || '').trim();
+            const year = (years[i]?.[0] || '').trim();
+            if (name.length > 0) {
+                recipients.push({ name, year });
+            }
+        }
+        return recipients;
     };
 
     const scholarshipData = {
         jurewicz: {
             purpose: getPurpose(vr[0]),
-            recipients: getRecipients(vr[1])
+            recipients: getRecipients(vr[1], vr[2])
         },
         taggart: {
-            purpose: getPurpose(vr[2]),
-            recipients: getRecipients(vr[3])
+            purpose: getPurpose(vr[3]),
+            recipients: getRecipients(vr[4], vr[5])
         }
     };
 

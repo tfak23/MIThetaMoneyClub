@@ -14,7 +14,7 @@ const CONFIG = {
     YEAR_DONOR_BASE_COL: 101, // CW = column 101
     YEAR_DONOR_COL_STEP: 6,
     CACHE_TTL_DAYS: 7,
-    CACHE_VERSION: 4, // Increment to force cache refresh when data structure changes
+    CACHE_VERSION: 5, // Increment to force cache refresh when data structure changes
     SUMMARY: {
         SHEET_NAME: 'Summary',
         AS_OF_DATE: 'J2',
@@ -28,11 +28,13 @@ const CONFIG = {
         SHEET_NAME: 'Merit Scholarships',
         JUREWICZ: {
             PURPOSE: 'A4',
-            RECIPIENTS: 'A7:A33'
+            NAMES: 'A7:A33',
+            YEARS: 'B7:B33'
         },
         TAGGART: {
             PURPOSE: 'A36',
-            RECIPIENTS: 'A38:A58'
+            NAMES: 'A38:A55',
+            YEARS: 'B38:B55'
         }
     }
 };
