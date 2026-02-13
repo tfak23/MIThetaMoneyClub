@@ -363,7 +363,7 @@ function renderDecadeCard() {
 
     container.innerHTML = `
         <div class="decade-card-btn">
-            <div class="decade-icon">&#9876;</div>
+            <div class="decade-icon">&#127937;</div>
             <h3 class="decade-btn-label">Donations by Decade</h3>
         </div>
     `;
@@ -399,10 +399,9 @@ function showDecadeLeaderboard() {
     container.innerHTML = `
         <div class="card level-members-card">
             <div class="level-members-header">
-                <div class="decade-icon-large">&#9876;</div>
+                <div class="decade-icon-large">&#127937;</div>
                 <div>
                     <h2 class="level-members-title">Donations by Decade</h2>
-                    <p class="level-members-count">Which era leads the way?</p>
                 </div>
             </div>
             <div class="accent-divider"></div>
@@ -419,7 +418,7 @@ function showDecadeLeaderboard() {
                                 <span class="decade-rank">${i + 1}</span>
                                 <span class="decade-label">${escapeHtml(d.label)}</span>
                                 ${crownHtml}
-                                <span class="decade-amount">${isZero ? '$0' : formatCurrency(d.total)}</span>
+                                <span class="decade-amount">${isZero ? '0%' : sharePct + '%'}</span>
                             </div>
                             <div class="decade-bar-track">
                                 <div class="decade-bar-fill${isZero ? ' decade-bar-empty' : ''}" style="width: ${isZero ? '100' : pct}%">

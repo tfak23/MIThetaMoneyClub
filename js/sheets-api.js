@@ -95,10 +95,21 @@ async function fetchMembersFromSheet() {
     const members = [];
 
     for (let i = 0; i < maxRows; i++) {
-        const firstName = String(firstNames[i]?.[0] || '').trim();
-        const lastName = String(lastNames[i]?.[0] || '').trim();
+        let firstName = String(firstNames[i]?.[0] || '').trim();
+        let lastName = String(lastNames[i]?.[0] || '').trim();
 
         if (!firstName && !lastName) continue;
+
+        // Detect ** suffix on either name as deceased marker and strip it
+        let deceasedByMarker = false;
+        if (firstName.endsWith('**')) {
+            firstName = firstName.slice(0, -2).trim();
+            deceasedByMarker = true;
+        }
+        if (lastName.endsWith('**')) {
+            lastName = lastName.slice(0, -2).trim();
+            deceasedByMarker = true;
+        }
 
         const roll = String(rollNumbers[i]?.[0] || '').trim();
         const rollShort = roll.replace(/^214-0*/i, '').replace(/-/g, '');
@@ -115,7 +126,7 @@ async function fetchMembersFromSheet() {
             roll,
             rollShort,
             totalDonations: donation,
-            isDeceased: designation === 'deceased' || designation === 'd',
+            isDeceased: deceasedByMarker || designation === 'deceased' || designation === 'd',
             isCurrentYearDonor: currentYearAmt > 0,
             isPreviousYearDonor: previousYearAmt > 0,
             decade
