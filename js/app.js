@@ -389,8 +389,10 @@ function showDecadeLeaderboard() {
     hide(document.getElementById('top-donors'));
     hide(document.getElementById('level-members'));
 
-    // Sort decades by total descending for ranking
-    const sorted = [...decadeData].sort((a, b) => b.total - a.total);
+    // Sort decades by total descending, exclude Friends of SigEp
+    const sorted = [...decadeData]
+        .filter(d => d.label.toLowerCase() !== 'friends of sigep')
+        .sort((a, b) => b.total - a.total);
     const maxTotal = sorted.length > 0 ? sorted[0].total : 1;
 
     // Calculate grand total for percentages
