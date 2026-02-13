@@ -993,40 +993,53 @@ main {
     padding: 0 20px;
 }
 
-.decade-list {
+.decade-pie-chart {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    margin: 24px auto;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    border: 3px solid var(--sigep-white);
+    outline: 1px solid var(--sigep-mid-gray);
+}
+
+.decade-pie-legend {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 16px;
+    gap: 6px;
+    margin-top: 20px;
 }
 
-.decade-item {
-    background: var(--sigep-light-gray);
+.decade-pie-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
     border-radius: var(--radius-input);
-    padding: 14px 16px;
+    background: var(--sigep-light-gray);
 }
 
-.decade-leader {
+.decade-pie-legend-item.decade-leader {
     background: linear-gradient(135deg, #fef9e7, #fff8e1);
     border: 1px solid #d4a017;
 }
 
-.decade-item-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+.decade-pie-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
 }
 
-.decade-rank {
-    font-size: 1.1rem;
+.decade-pie-rank {
+    font-size: 1rem;
     font-weight: 900;
     color: var(--sigep-red);
-    min-width: 24px;
+    min-width: 20px;
     text-align: center;
 }
 
-.decade-label {
+.decade-pie-label {
     font-weight: 700;
     color: var(--sigep-dark);
     flex: 1;
@@ -1037,56 +1050,17 @@ main {
     line-height: 1;
 }
 
-.decade-amount {
+.decade-pie-pct {
     font-weight: 700;
     color: var(--sigep-purple);
     white-space: nowrap;
+    font-size: 0.95rem;
 }
 
-.decade-bar-track {
-    width: 100%;
-    height: 24px;
-    background: var(--sigep-mid-gray);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.decade-bar-fill {
-    height: 100%;
-    background: var(--sigep-red);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 10px;
-    min-width: 40px;
-    transition: width 0.8s ease;
-}
-
-.decade-leader .decade-bar-fill {
-    background: linear-gradient(90deg, var(--sigep-red), var(--sigep-red-dark));
-}
-
-.decade-bar-empty {
-    background: transparent;
-    border: 2px dashed var(--sigep-mid-gray);
-    justify-content: center;
-    padding-right: 0;
-}
-
-.decade-bar-pct {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--sigep-white);
-    white-space: nowrap;
-}
-
-.decade-bar-cta {
-    font-size: 0.75rem;
-    font-weight: 700;
+.decade-pie-pct em {
+    font-weight: 600;
+    font-size: 0.8rem;
     color: var(--sigep-text-light);
-    font-style: italic;
-    white-space: nowrap;
 }
 
 /* ===========================
