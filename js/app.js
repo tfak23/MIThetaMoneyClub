@@ -363,7 +363,7 @@ function renderDecadeCard() {
 
     container.innerHTML = `
         <div class="decade-card-btn">
-            <div class="decade-icon">&#129383;</div>
+            <div class="decade-icon">&#127939;</div>
             <h3 class="decade-btn-label">Donations by Decade</h3>
         </div>
     `;
@@ -396,46 +396,33 @@ function showDecadeLeaderboard() {
     // Calculate grand total for percentages
     const grandTotal = sorted.reduce((sum, d) => sum + d.total, 0);
 
-    // Pie chart colors
-    const pieColors = ['#e2231a', '#7b2d5f', '#d4a017', '#2e86de', '#27ae60', '#e67e22', '#8e44ad', '#95a5a6'];
-
-    // Build conic-gradient stops
-    let gradientStops = [];
-    let cumulative = 0;
-    sorted.forEach((d, i) => {
-        const sharePct = grandTotal > 0 ? (d.total / grandTotal) * 100 : 0;
-        const color = pieColors[i % pieColors.length];
-        gradientStops.push(`${color} ${cumulative}% ${cumulative + sharePct}%`);
-        cumulative += sharePct;
-    });
-
-    const pieStyle = grandTotal > 0
-        ? `background: conic-gradient(${gradientStops.join(', ')})`
-        : 'background: var(--sigep-mid-gray)';
-
     container.innerHTML = `
         <div class="card level-members-card">
             <div class="level-members-header">
-                <div class="decade-icon-large">&#129383;</div>
+                <div class="decade-icon-large">&#127939;</div>
                 <div>
                     <h2 class="level-members-title">Donations by Decade</h2>
                 </div>
             </div>
             <div class="accent-divider"></div>
-            <div class="decade-pie-chart" style="${pieStyle}"></div>
-            <div class="decade-pie-legend">
+            <div class="race-track">
+                <div class="race-finish-line"></div>
                 ${sorted.map((d, i) => {
                     const sharePct = grandTotal > 0 ? ((d.total / grandTotal) * 100).toFixed(1) : '0.0';
+                    const runnerPos = grandTotal > 0 ? (d.total / maxTotal) * 100 : 0;
                     const isZero = d.total === 0;
                     const isLeader = i === 0 && d.total > 0;
-                    const color = pieColors[i % pieColors.length];
-                    const crownHtml = isLeader ? ' <span class="decade-crown">&#128081;</span>' : '';
+                    const crownHtml = isLeader ? '<span class="race-crown">&#128081;</span>' : '';
                     return `
-                        <div class="decade-pie-legend-item${isLeader ? ' decade-leader' : ''}">
-                            <span class="decade-pie-swatch" style="background: ${color}"></span>
-                            <span class="decade-pie-rank">${i + 1}</span>
-                            <span class="decade-pie-label">${escapeHtml(d.label)}${crownHtml}</span>
-                            <span class="decade-pie-pct">${isZero ? '<em>Be the first!</em>' : sharePct + '%'}</span>
+                        <div class="race-lane${isLeader ? ' race-lane-leader' : ''}${i % 2 === 0 ? ' race-lane-even' : ' race-lane-odd'}">
+                            <div class="race-bib">${escapeHtml(d.label)}</div>
+                            <div class="race-track-surface">
+                                <div class="race-runner-wrapper" style="left: ${isZero ? 0 : runnerPos}%">
+                                    ${crownHtml}
+                                    <span class="race-runner${isLeader ? ' race-runner-leader' : ''}">&#127939;</span>
+                                    <span class="race-stat">${isZero ? '<em>On your marks!</em>' : sharePct + '%'}</span>
+                                </div>
+                            </div>
                         </div>`;
                 }).join('')}
             </div>
