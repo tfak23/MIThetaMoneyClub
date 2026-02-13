@@ -996,18 +996,17 @@ main {
 /* --- War Banners --- */
 
 .banner-field {
-    margin-top: 20px;
-    padding: 20px 0 0;
+    margin-top: 16px;
+    padding: 0;
     overflow-x: auto;
 }
 
 .banner-row {
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-content: center;
-    gap: 6px;
-    min-height: 280px;
-    padding: 0 8px;
+    gap: 10px;
+    padding: 8px 4px 0;
 }
 
 .banner-column {
@@ -1015,100 +1014,81 @@ main {
     flex-direction: column;
     align-items: center;
     flex: 1;
-    min-width: 48px;
-    max-width: 85px;
-}
-
-.banner-pct {
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: var(--sigep-purple);
-    margin-bottom: 4px;
-    min-height: 18px;
-}
-
-.banner-crown {
-    font-size: 1rem;
-    line-height: 1;
-    margin-bottom: 2px;
+    min-width: 52px;
+    max-width: 80px;
 }
 
 .banner-pole {
-    width: 6px;
-    height: 180px;
-    background: linear-gradient(to bottom, #888, #aaa);
-    border-radius: 3px 3px 0 0;
+    width: 4px;
+    height: 200px;
+    background: linear-gradient(to bottom, #6b6b6b, #999);
+    border-radius: 2px;
     position: relative;
-    display: flex;
-    align-items: flex-end;
-    box-shadow: 1px 0 3px rgba(0,0,0,0.2);
 }
 
 .banner-pole::before {
     content: '';
     position: absolute;
-    top: -4px;
+    top: -5px;
     left: 50%;
     transform: translateX(-50%);
-    width: 10px;
-    height: 10px;
-    background: radial-gradient(circle, #d4a017, #a07c1a);
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle at 35% 35%, #f0d060, #b8860b);
     border-radius: 50%;
-    box-shadow: 0 0 4px rgba(212, 160, 23, 0.5);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
 .banner-flag {
     position: absolute;
-    bottom: 0;
-    left: 6px;
-    width: 42px;
-    border-radius: 0 4px 4px 0;
-    background: linear-gradient(180deg, var(--sigep-red) 0%, #b71c1c 100%);
-    box-shadow: 2px 2px 6px rgba(0,0,0,0.25);
+    top: 6px;
+    left: 4px;
+    width: 50px;
+    background: linear-gradient(135deg, var(--sigep-red) 0%, #c41e1a 50%, #a01610 100%);
+    border-radius: 0 3px 0 0;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    overflow: hidden;
+    padding-top: 8px;
     transition: height 1s cubic-bezier(0.22, 1, 0.36, 1);
     min-height: 0;
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.2);
+    overflow: visible;
 }
 
-.banner-flag::after {
-    content: '';
+.banner-flag-tip {
     position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 6px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.15), transparent);
-}
-
-.banner-flag-leader {
-    width: 48px;
-    background: linear-gradient(180deg, #d4a017 0%, #b8860b 100%);
-    box-shadow: 2px 2px 8px rgba(212, 160, 23, 0.4);
+    bottom: -10px;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 25px solid var(--sigep-red);
+    border-right: 25px solid var(--sigep-red);
+    border-bottom: 10px solid transparent;
 }
 
 .banner-flag-zero {
     height: 0 !important;
     background: transparent;
     box-shadow: none;
+    overflow: hidden;
 }
 
-.banner-flag-label {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    font-size: 0.55rem;
-    font-weight: 800;
-    color: rgba(255, 255, 255, 0.9);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
-    padding: 4px 0;
+.banner-flag-zero .banner-flag-tip {
+    display: none;
+}
+
+.banner-flag-pct {
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    letter-spacing: -0.02em;
+    line-height: 1;
 }
 
 .banner-base {
-    margin-top: 8px;
+    margin-top: 10px;
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -1116,25 +1096,25 @@ main {
 }
 
 .banner-decade-name {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 800;
     color: var(--sigep-dark);
     line-height: 1.2;
 }
 
 .banner-donors {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     font-weight: 600;
     color: var(--sigep-text-light);
     white-space: nowrap;
 }
 
 .banner-cta {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
     font-weight: 700;
     color: var(--sigep-red);
     font-style: italic;
-    white-space: nowrap;
+    line-height: 1.2;
 }
 
 /* ===========================

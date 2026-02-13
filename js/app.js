@@ -412,23 +412,20 @@ function showDecadeLeaderboard() {
                         const sharePct = grandTotal > 0 ? ((d.total / grandTotal) * 100).toFixed(1) : '0.0';
                         const heightPct = maxPct > 0 && d.total > 0 ? (parseFloat(sharePct) / maxPct) * 100 : 0;
                         const isZero = d.total === 0;
-                        const isLeader = i === 0 && d.total > 0;
-                        const crownHtml = isLeader ? '<div class="banner-crown">&#128081;</div>' : '';
                         const donorCount = d.donors || 0;
                         return `
                             <div class="banner-column">
-                                <div class="banner-pct">${isZero ? '' : sharePct + '%'}</div>
-                                ${crownHtml}
                                 <div class="banner-pole">
-                                    <div class="banner-flag${isLeader ? ' banner-flag-leader' : ''}${isZero ? ' banner-flag-zero' : ''}" style="height: ${isZero ? 0 : heightPct}%">
-                                        <span class="banner-flag-label">${escapeHtml(d.label)}</span>
+                                    <div class="banner-flag${isZero ? ' banner-flag-zero' : ''}" style="height: ${isZero ? 0 : heightPct}%">
+                                        <span class="banner-flag-pct">${isZero ? '' : sharePct + '%'}</span>
+                                        <div class="banner-flag-tip"></div>
                                     </div>
                                 </div>
                                 <div class="banner-base">
                                     <span class="banner-decade-name">${escapeHtml(d.label)}</span>
                                     ${isZero
-                                        ? '<span class="banner-cta">Rally the troops!</span>'
-                                        : `<span class="banner-donors">&#9876;&#65039; ${donorCount} Donor${donorCount !== 1 ? 's' : ''}</span>`
+                                        ? '<span class="banner-cta">Rally the<br>troops!</span>'
+                                        : `<span class="banner-donors">${donorCount} Donor${donorCount !== 1 ? 's' : ''}</span>`
                                     }
                                 </div>
                             </div>`;
