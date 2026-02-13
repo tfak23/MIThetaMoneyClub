@@ -928,6 +928,156 @@ main {
 }
 
 /* ===========================
+   Donations by Decade
+   =========================== */
+
+.decade-btn-section {
+    display: flex;
+    justify-content: center;
+    padding: 0 20px 24px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.decade-card-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #f3e8f9, #ede0f5);
+    border: 2px solid var(--sigep-purple);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 16px 32px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.decade-card-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+}
+
+.decade-btn-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--sigep-dark);
+}
+
+.decade-icon {
+    font-size: 1.8rem;
+    color: var(--sigep-purple);
+    line-height: 1;
+}
+
+.decade-icon-large {
+    font-size: 2.5rem;
+    color: var(--sigep-purple);
+    line-height: 1;
+}
+
+.decade-leaderboard-section {
+    max-width: 700px;
+    margin: 0 auto 32px;
+    padding: 0 20px;
+}
+
+.decade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.decade-item {
+    background: var(--sigep-light-gray);
+    border-radius: var(--radius-input);
+    padding: 14px 16px;
+}
+
+.decade-leader {
+    background: linear-gradient(135deg, #fef9e7, #fff8e1);
+    border: 1px solid #d4a017;
+}
+
+.decade-item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.decade-rank {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--sigep-red);
+    min-width: 24px;
+    text-align: center;
+}
+
+.decade-label {
+    font-weight: 700;
+    color: var(--sigep-dark);
+    flex: 1;
+}
+
+.decade-crown {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.decade-amount {
+    font-weight: 700;
+    color: var(--sigep-purple);
+    white-space: nowrap;
+}
+
+.decade-bar-track {
+    width: 100%;
+    height: 24px;
+    background: var(--sigep-mid-gray);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.decade-bar-fill {
+    height: 100%;
+    background: var(--sigep-red);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    min-width: 40px;
+    transition: width 0.8s ease;
+}
+
+.decade-leader .decade-bar-fill {
+    background: linear-gradient(90deg, var(--sigep-red), var(--sigep-red-dark));
+}
+
+.decade-bar-empty {
+    background: transparent;
+    border: 2px dashed var(--sigep-mid-gray);
+    justify-content: center;
+    padding-right: 0;
+}
+
+.decade-bar-pct {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--sigep-white);
+    white-space: nowrap;
+}
+
+.decade-bar-cta {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--sigep-text-light);
+    font-style: italic;
+    white-space: nowrap;
+}
+
+/* ===========================
    Legend
    =========================== */
 

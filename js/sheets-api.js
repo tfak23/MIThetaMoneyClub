@@ -61,7 +61,8 @@ async function fetchMembersFromSheet() {
         `${SHEET_NAME}!${COLUMNS.LAST_NAME}2:${COLUMNS.LAST_NAME}`,
         `${SHEET_NAME}!${COLUMNS.TOTAL_DONATIONS}2:${COLUMNS.TOTAL_DONATIONS}`,
         `${SHEET_NAME}!${currentYearCol}2:${currentYearCol}`,
-        `${SHEET_NAME}!${previousYearCol}2:${previousYearCol}`
+        `${SHEET_NAME}!${previousYearCol}2:${previousYearCol}`,
+        `${SHEET_NAME}!${COLUMNS.DECADE}2:${COLUMNS.DECADE}`
     ];
 
     const url = sheetsBatchUrl(SPREADSHEET_ID, ranges);
@@ -81,6 +82,7 @@ async function fetchMembersFromSheet() {
     const totalDonations = valueRanges[4]?.values || [];
     const currentYearDonations = valueRanges[5]?.values || [];
     const previousYearDonations = valueRanges[6]?.values || [];
+    const decades = valueRanges[7]?.values || [];
 
     const maxRows = Math.max(
         designations.length,
@@ -104,6 +106,7 @@ async function fetchMembersFromSheet() {
         const donation = parseFloat(String(totalDonations[i]?.[0] || '0').replace(/[$,]/g, '')) || 0;
         const currentYearAmt = parseFloat(String(currentYearDonations[i]?.[0] || '0').replace(/[$,]/g, '')) || 0;
         const previousYearAmt = parseFloat(String(previousYearDonations[i]?.[0] || '0').replace(/[$,]/g, '')) || 0;
+        const decade = String(decades[i]?.[0] || '').trim();
 
         members.push({
             firstName,
@@ -114,7 +117,8 @@ async function fetchMembersFromSheet() {
             totalDonations: donation,
             isDeceased: designation === 'deceased' || designation === 'd',
             isCurrentYearDonor: currentYearAmt > 0,
-            isPreviousYearDonor: previousYearAmt > 0
+            isPreviousYearDonor: previousYearAmt > 0,
+            decade
         });
     }
 
@@ -246,4 +250,41 @@ async function fetchScholarshipData() {
             recipients: parseRecipients(vr[4], vr[5])
         }
     };
+}
+
+// ===========================
+// Decade Data
+// ===========================
+
+async function fetchDecadeData() {
+    const { SPREADSHEET_ID, SUMMARY } = CONFIG;
+
+    const ranges = [
+        `${SUMMARY.SHEET_NAME}!${SUMMARY.DECADE_LABELS}`,
+        `${SUMMARY.SHEET_NAME}!${SUMMARY.DECADE_TOTALS}`
+    ];
+
+    const url = sheetsBatchUrl(SPREADSHEET_ID, ranges);
+    const response = await fetch(url);
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    const vr = data.valueRanges || [];
+
+    const labels = vr[0]?.values || [];
+    const totals = vr[1]?.values || [];
+
+    const decades = [];
+    const maxLen = Math.max(labels.length, totals.length);
+
+    for (let i = 0; i < maxLen; i++) {
+        const label = String(labels[i]?.[0] || '').trim();
+        const total = parseFloat(String(totals[i]?.[0] || '0').replace(/[$,]/g, '')) || 0;
+        if (label) {
+            decades.push({ label, total });
+        }
+    }
+
+    return decades;
 }

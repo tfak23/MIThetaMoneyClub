@@ -7,6 +7,8 @@ let openLevelName = null;
 let topDonorsOpen = false;
 let scholarshipData = null;
 let openScholarshipKey = null;
+let decadeOpen = false;
+let decadeData = null;
 
 async function init() {
     const searchInput = document.getElementById('search-input');
@@ -22,16 +24,19 @@ async function init() {
     searchInput.disabled = true;
 
     try {
-        const [memberResult, fundData] = await Promise.all([
+        const [memberResult, fundData, decData] = await Promise.all([
             getMemberData(),
-            fetchFundProgress().catch(() => null)
+            fetchFundProgress().catch(() => null),
+            fetchDecadeData().catch(() => null)
         ]);
 
         const { members, stale, cacheDate } = memberResult;
         allMembers = members;
+        decadeData = decData;
         initializeSearch(members);
         renderLevelsGrid();
         renderTopDonorsCard();
+        renderDecadeCard();
         searchInput.disabled = false;
         searchInput.focus();
 
@@ -161,9 +166,13 @@ function renderResultCard(member) {
 
     let ctaHtml = '';
     if (member.totalDonations === 0) {
+        const is2020s = member.decade && member.decade.toLowerCase().includes('2020');
+        const ctaText = is2020s
+            ? 'The 2020s haven\'t made it on the Donations by Decade board yet — be the first to represent your era!'
+            : 'Make a difference today! Support your chapter by donating to one of our scholarship endowments below.';
         ctaHtml = `
             <div class="donate-cta">
-                <p class="donate-cta-text">Make a difference today! Support your chapter by donating to one of our scholarship endowments below.</p>
+                <p class="donate-cta-text">${ctaText}</p>
                 <div class="donate-cta-buttons">
                     <a href="https://give.sigep.org/give/211213/?_ga=2.62207717.837129945.1670203913-1808852390.1670203913#!/donation/checkout?designation=155554"
                        class="donate-cta-btn" target="_blank" rel="noopener noreferrer">Support BMS Fund</a>
@@ -238,6 +247,10 @@ function renderLevelMembers(level) {
     topDonorsOpen = false;
     hide(document.getElementById('top-donors'));
 
+    // Close decade leaderboard if open
+    decadeOpen = false;
+    hide(document.getElementById('decade-leaderboard'));
+
     const membersInLevel = allMembers.filter(m => {
         const memberLevel = getGivingLevel(m.totalDonations);
         return memberLevel && memberLevel.name === level.name;
@@ -304,6 +317,10 @@ function showTopDonorsList() {
     openLevelName = null;
     hide(document.getElementById('level-members'));
 
+    // Close decade leaderboard if open
+    decadeOpen = false;
+    hide(document.getElementById('decade-leaderboard'));
+
     const topMembers = [...allMembers]
         .filter(m => m.totalDonations > 0)
         .sort((a, b) => b.totalDonations - a.totalDonations)
@@ -330,6 +347,85 @@ function showTopDonorsList() {
                             <span class="top-donor-rank">${i + 1}</span>
                             <span class="top-donor-name ${nameClass}">${escapeHtml(m.fullName)}</span>
                             <span class="top-donor-level">${levelName}</span>
+                        </div>`;
+                }).join('')}
+            </div>
+        </div>
+    `;
+
+    show(container);
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderDecadeCard() {
+    const container = document.getElementById('decade-btn');
+    if (!container || !decadeData) return;
+
+    container.innerHTML = `
+        <div class="decade-card-btn">
+            <div class="decade-icon">&#9876;</div>
+            <h3 class="decade-btn-label">Donations by Decade</h3>
+        </div>
+    `;
+    container.addEventListener('click', () => showDecadeLeaderboard());
+    show(container);
+}
+
+function showDecadeLeaderboard() {
+    const container = document.getElementById('decade-leaderboard');
+    if (!container || !decadeData) return;
+
+    // Toggle: clicking again closes it
+    if (decadeOpen && !container.classList.contains('hidden')) {
+        hide(container);
+        decadeOpen = false;
+        return;
+    }
+    decadeOpen = true;
+
+    // Close other panels
+    topDonorsOpen = false;
+    openLevelName = null;
+    hide(document.getElementById('top-donors'));
+    hide(document.getElementById('level-members'));
+
+    // Sort decades by total descending for ranking
+    const sorted = [...decadeData].sort((a, b) => b.total - a.total);
+    const maxTotal = sorted.length > 0 ? sorted[0].total : 1;
+
+    // Calculate grand total for percentages
+    const grandTotal = sorted.reduce((sum, d) => sum + d.total, 0);
+
+    container.innerHTML = `
+        <div class="card level-members-card">
+            <div class="level-members-header">
+                <div class="decade-icon-large">&#9876;</div>
+                <div>
+                    <h2 class="level-members-title">Donations by Decade</h2>
+                    <p class="level-members-count">Which era leads the way?</p>
+                </div>
+            </div>
+            <div class="accent-divider"></div>
+            <div class="decade-list">
+                ${sorted.map((d, i) => {
+                    const pct = maxTotal > 0 ? (d.total / maxTotal) * 100 : 0;
+                    const sharePct = grandTotal > 0 ? ((d.total / grandTotal) * 100).toFixed(1) : '0.0';
+                    const isZero = d.total === 0;
+                    const rankClass = i === 0 && d.total > 0 ? ' decade-leader' : '';
+                    const crownHtml = i === 0 && d.total > 0 ? '<span class="decade-crown">&#128081;</span>' : '';
+                    return `
+                        <div class="decade-item${rankClass}">
+                            <div class="decade-item-header">
+                                <span class="decade-rank">${i + 1}</span>
+                                <span class="decade-label">${escapeHtml(d.label)}</span>
+                                ${crownHtml}
+                                <span class="decade-amount">${isZero ? '$0' : formatCurrency(d.total)}</span>
+                            </div>
+                            <div class="decade-bar-track">
+                                <div class="decade-bar-fill${isZero ? ' decade-bar-empty' : ''}" style="width: ${isZero ? '100' : pct}%">
+                                    ${isZero ? '<span class="decade-bar-cta">Be the first!</span>' : `<span class="decade-bar-pct">${sharePct}%</span>`}
+                                </div>
+                            </div>
                         </div>`;
                 }).join('')}
             </div>

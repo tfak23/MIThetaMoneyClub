@@ -7,6 +7,7 @@ const CONFIG = {
         ROLL_NUMBER: 'D',
         FIRST_NAME: 'E',
         LAST_NAME: 'F',
+        DECADE: 'J',
         TOTAL_DONATIONS: 'EV' // Update this if the column moves
     },
     // Dynamic year-based donor column: 2026=CW (col 101), each year +6 columns
@@ -14,14 +15,16 @@ const CONFIG = {
     YEAR_DONOR_BASE_COL: 101, // CW = column 101
     YEAR_DONOR_COL_STEP: 6,
     CACHE_TTL_DAYS: 7,
-    CACHE_VERSION: 5, // Increment to force cache refresh when data structure changes
+    CACHE_VERSION: 6, // Increment to force cache refresh when data structure changes
     SUMMARY: {
         SHEET_NAME: 'Summary',
         AS_OF_DATE: 'J2',
         LEADERSHIP_TOTAL: 'J4',
         LEADERSHIP_GOAL: 'K4',
         BMS_TOTAL: 'J5',
-        BMS_GOAL: 'K5'
+        BMS_GOAL: 'K5',
+        DECADE_LABELS: 'A3:A9',
+        DECADE_TOTALS: 'B3:B9'
     },
     SCHOLARSHIPS: {
         SPREADSHEET_ID: '1VxjgaGdfaXiYrRh21u2SaKgHMkrrgaehFLUH_ZEqGxE',
