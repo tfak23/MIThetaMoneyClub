@@ -1223,6 +1223,11 @@ main {
         -webkit-overflow-scrolling: touch;
     }
 
+    .decade-leaderboard-section .level-members-card {
+        min-width: 500px;
+        width: fit-content;
+    }
+
     .chart-container {
         min-width: 500px;
     }
