@@ -119,6 +119,9 @@ async function fetchMembersFromSheet() {
         const previousYearAmt = parseFloat(String(previousYearDonations[i]?.[0] || '0').replace(/[$,]/g, '')) || 0;
         const decade = String(decades[i]?.[0] || '').trim();
 
+        // Only include members with 'Brother' designation
+        if (designation !== 'brother') continue;
+
         members.push({
             firstName,
             lastName,
