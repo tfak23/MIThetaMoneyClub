@@ -146,6 +146,25 @@ function renderResultCard(member) {
             </div>`;
     }
 
+    // Progress bar toward next level
+    let progressBarHtml = '';
+    if (nextLevel && level && member.totalDonations > 0) {
+        const remaining = nextLevel.min - member.totalDonations;
+        const range = nextLevel.min - level.min;
+        const progress = ((member.totalDonations - level.min) / range) * 100;
+        const pct = Math.min(Math.max(progress, 2), 100);
+        progressBarHtml = `
+            <div class="level-progress">
+                <div class="level-progress-header">
+                    <span>${level.name} (${formatCurrency(level.min)})</span>
+                    <span><strong>${nextLevel.name} (${formatCurrency(nextLevel.min)})</strong></span>
+                </div>
+                <div class="level-progress-track">
+                    <div class="level-progress-fill" style="width: ${pct.toFixed(1)}%"></div>
+                </div>
+            </div>`;
+    }
+
     let nextLevelHtml = '';
     if (nextLevel && member.totalDonations > 0) {
         const remaining = nextLevel.min - member.totalDonations;
@@ -164,20 +183,59 @@ function renderResultCard(member) {
         levelNameHtml = `<p class="giving-level-name">No donations recorded</p>`;
     }
 
-    let ctaHtml = '';
-    if (member.totalDonations === 0) {
+    // Donor messaging: thank you, previous year nudge, lapsed nudge, or zero-donor CTA
+    const bmsFundUrl = 'https://give.sigep.org/give/211213/?_ga=2.62207717.837129945.1670203913-1808852390.1670203913#!/donation/checkout?designation=155554';
+    const leadershipFundUrl = 'https://give.sigep.org/give/211213/?_ga=2.62207717.837129945.1670203913-1808852390.1670203913#!/donation/checkout?designation=155555';
+
+    let donorMessageHtml = '';
+    if (member.isDeceased) {
+        // No messaging for deceased brothers
+    } else if (member.isCurrentYearDonor) {
+        // Current year donor: thank you
+        donorMessageHtml = `
+            <div class="thank-you-banner">
+                <div class="thank-you-icon">&#9829;</div>
+                <p>Thank you for your generous contribution this year, Brother! Your support keeps MI Theta strong.</p>
+            </div>`;
+    } else if (member.isPreviousYearDonor) {
+        // Previous year donor: thank + gentle nudge with CTA
+        const nudgeText = nextLevel && member.totalDonations > 0
+            ? `Thank you for donating last year! Keep the momentum going — you're only <strong>${formatCurrency(nextLevel.min - member.totalDonations)}</strong> away from <strong>${nextLevel.name}</strong>.`
+            : 'Thank you for donating last year! Keep the momentum going — make your impact again this year.';
+        donorMessageHtml = `
+            <div class="previous-year-banner">
+                <div class="previous-year-icon">&#128170;</div>
+                <p>${nudgeText}</p>
+                <div class="previous-year-cta-buttons">
+                    <a href="${bmsFundUrl}" class="previous-year-cta-btn" target="_blank" rel="noopener noreferrer">Support BMS Fund</a>
+                    <a href="${leadershipFundUrl}" class="previous-year-cta-btn previous-year-cta-btn-alt" target="_blank" rel="noopener noreferrer">Support Leadership Fund</a>
+                </div>
+            </div>`;
+    } else if (member.totalDonations > 0) {
+        // Lapsed donor: has donated before but not in current or previous year
+        const lapsedText = nextLevel
+            ? `It's been a while since your last donation. You're only <strong>${formatCurrency(nextLevel.min - member.totalDonations)}</strong> away from the next level — pick up where you left off!`
+            : 'It\'s been a while since your last donation — pick up where you left off and keep MI Theta strong!';
+        donorMessageHtml = `
+            <div class="lapsed-cta">
+                <p>${lapsedText}</p>
+                <div class="lapsed-cta-buttons">
+                    <a href="${bmsFundUrl}" class="lapsed-cta-btn" target="_blank" rel="noopener noreferrer">Support BMS Fund</a>
+                    <a href="${leadershipFundUrl}" class="lapsed-cta-btn lapsed-cta-btn-alt" target="_blank" rel="noopener noreferrer">Support Leadership Fund</a>
+                </div>
+            </div>`;
+    } else {
+        // Zero donor CTA
         const is2020s = member.decade && member.decade.toLowerCase().includes('2020');
         const ctaText = is2020s
             ? 'The 2020s haven\'t made it on the Donations by Decade board yet — be the first to represent your era!'
             : 'Make a difference today! Support your chapter by donating to one of our scholarship endowments below.';
-        ctaHtml = `
+        donorMessageHtml = `
             <div class="donate-cta">
                 <p class="donate-cta-text">${ctaText}</p>
                 <div class="donate-cta-buttons">
-                    <a href="https://give.sigep.org/give/211213/?_ga=2.62207717.837129945.1670203913-1808852390.1670203913#!/donation/checkout?designation=155554"
-                       class="donate-cta-btn" target="_blank" rel="noopener noreferrer">Support BMS Fund</a>
-                    <a href="https://give.sigep.org/give/211213/?_ga=2.62207717.837129945.1670203913-1808852390.1670203913#!/donation/checkout?designation=155555"
-                       class="donate-cta-btn donate-cta-btn-alt" target="_blank" rel="noopener noreferrer">Support Leadership Fund</a>
+                    <a href="${bmsFundUrl}" class="donate-cta-btn" target="_blank" rel="noopener noreferrer">Support BMS Fund</a>
+                    <a href="${leadershipFundUrl}" class="donate-cta-btn donate-cta-btn-alt" target="_blank" rel="noopener noreferrer">Support Leadership Fund</a>
                 </div>
             </div>`;
     }
@@ -196,8 +254,9 @@ function renderResultCard(member) {
             <div class="accent-divider"></div>
             <p class="donation-amount">${formatCurrency(member.totalDonations)}</p>
             ${levelNameHtml}
+            ${progressBarHtml}
             ${nextLevelHtml}
-            ${ctaHtml}
+            ${donorMessageHtml}
         </div>
     `;
 
