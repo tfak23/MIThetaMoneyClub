@@ -537,7 +537,7 @@ function renderFundProgress(fundData) {
                     <div class="fund-bar-item fund-bar-clickable fund-bar-memorial" data-memorial="true">
                         <div class="fund-bar-header">
                             <span class="fund-bar-name">${fund.name}</span>
-                            <span class="fund-onhold-badge">Needs Support</span>
+                            <span class="fund-onhold-badge">Help Needed</span>
                         </div>
                         <div class="progress-bar-track">
                             <div class="progress-bar-fill-memorial" style="width: 100%">
