@@ -518,7 +518,11 @@ function renderFundProgress(fundData) {
         { name: 'Patrick J. Taggart Jr. Passion Scholarship', total: 62500, goal: 62500, completed: true, scholarshipKey: 'taggart' },
     ];
 
-    const allFunds = [...activeFunds, ...completedFunds];
+    const memorialFund = [
+        { name: 'On Campus Memorial', total: 25000, goal: null, memorial: true },
+    ];
+
+    const allFunds = [...activeFunds, ...completedFunds, ...memorialFund];
 
     const asOfText = fundData.asOfDate ? `As of ${fundData.asOfDate}` : '';
 
@@ -528,6 +532,25 @@ function renderFundProgress(fundData) {
         ${asOfText ? `<p class="fund-as-of">${asOfText}</p>` : ''}
         <div class="fund-bars">
             ${allFunds.map(fund => {
+                if (fund.memorial) {
+                    return `
+                    <div class="fund-bar-item fund-bar-clickable fund-bar-memorial" data-memorial="true">
+                        <div class="fund-bar-header">
+                            <span class="fund-bar-name">${fund.name}</span>
+                            <span class="fund-onhold-badge">Needs Support</span>
+                        </div>
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill-memorial" style="width: 100%">
+                                <span class="progress-bar-label">Fundraising Closed</span>
+                            </div>
+                        </div>
+                        <div class="fund-bar-amounts">
+                            <span>${formatCurrency(fund.total)} raised</span>
+                            <span>Goal: TBD</span>
+                        </div>
+                        <p class="fund-bar-hint">Click to view project details &amp; volunteer</p>
+                    </div>`;
+                }
                 const pct = Math.min((fund.total / fund.goal) * 100, 100);
                 const fillClass = fund.completed ? 'progress-bar-fill-completed' : 'progress-bar-fill';
                 const label = fund.completed ? 'Completed' : `${Math.round(pct)}%`;
@@ -558,6 +581,7 @@ function renderFundProgress(fundData) {
         el.addEventListener('click', () => {
             const key = el.getAttribute('data-scholarship');
             if (key) showScholarshipDetail(key);
+            if (el.getAttribute('data-memorial')) showMemorialDetail();
         });
     });
 
@@ -609,6 +633,57 @@ async function showScholarshipDetail(key) {
                         ${r.year ? `<span class="recipient-year">${escapeHtml(r.year)}</span>` : ''}
                     </div>
                 `).join('')}
+            </div>
+        </div>
+    `;
+
+    show(container);
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+let memorialOpen = false;
+
+function showMemorialDetail() {
+    const container = document.getElementById('memorial-detail');
+    if (!container) return;
+
+    // Toggle: clicking again closes it
+    if (memorialOpen && !container.classList.contains('hidden')) {
+        hide(container);
+        memorialOpen = false;
+        return;
+    }
+    memorialOpen = true;
+
+    // Close scholarship detail if open
+    openScholarshipKey = null;
+    hide(document.getElementById('scholarship-detail'));
+
+    const emailTo = 'sigepsam@gmail.com,rrochon1901@gmail.com,sigep.mitheta.alumni@gmail.com';
+    const emailSubject = encodeURIComponent('On Campus Memorial - Volunteer Interest');
+    const emailBody = encodeURIComponent('Hello,\n\nI am interested in volunteering to help support the MI Theta On Campus Memorial project at Lawrence Tech. Please let me know how I can get involved.\n\nThank you!');
+    const mailtoLink = `mailto:${emailTo}?subject=${emailSubject}&body=${emailBody}`;
+
+    container.innerHTML = `
+        <div class="card memorial-card">
+            <h2 class="memorial-title">On Campus Memorial</h2>
+            <div class="accent-divider"></div>
+            <div class="memorial-image-container">
+                <img src="assets/badges/memorial.jpg" alt="On Campus Memorial Design Concept" class="memorial-image" />
+            </div>
+            <div class="memorial-status-badge">Project On Hold — Volunteers Needed</div>
+            <div class="memorial-context">
+                <h3 class="memorial-section-heading">Background</h3>
+                <p>In 2017, MI Theta brothers successfully fundraised and closed out a $25,000 campaign to build an on-campus memorial at Lawrence Technological University honoring our chapter's legacy.</p>
+                <h3 class="memorial-section-heading">What Happened</h3>
+                <p>In 2019, a design concept was developed and site approvals were secured from Lawrence Tech as we planned for a ribbon-cutting ceremony to celebrate the chapter's 50th anniversary. Unfortunately, construction costs increased significantly in the years that followed, and the project was put on hold.</p>
+                <h3 class="memorial-section-heading">Where We Are Now</h3>
+                <p>The funds are still earmarked and the vision remains intact, but we need help from brothers who can volunteer their time, expertise, or connections to work with Lawrence Tech and get this project back on track. Whether you have experience in construction, project management, university relations, or simply want to lend a hand — we want to hear from you.</p>
+            </div>
+            <div class="memorial-cta">
+                <p class="memorial-cta-text">Interested in helping bring this memorial to life?</p>
+                <a href="${mailtoLink}" class="memorial-volunteer-btn">I Am Interested</a>
+                <p class="memorial-cta-contacts">Your message will be sent to Sam Moschelli, Rob Rochon, and the MI Theta AVC team.</p>
             </div>
         </div>
     `;

@@ -15,7 +15,7 @@ const CONFIG = {
     YEAR_DONOR_BASE_COL: 101, // CW = column 101
     YEAR_DONOR_COL_STEP: 6,
     CACHE_TTL_DAYS: 7,
-    CACHE_VERSION: 9, // Increment to force cache refresh when data structure changes
+    CACHE_VERSION: 10, // Increment to force cache refresh when data structure changes
     SUMMARY: {
         SHEET_NAME: 'Summary',
         AS_OF_DATE: 'J2',
