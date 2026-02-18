@@ -585,10 +585,6 @@ main {
     border-radius: var(--radius-pill);
 }
 
-.fund-bar-memorial {
-    border: 2px solid var(--sigep-purple-light);
-}
-
 /* ===========================
    Scholarship Detail
    =========================== */

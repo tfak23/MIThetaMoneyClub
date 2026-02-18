@@ -548,7 +548,7 @@ function renderFundProgress(fundData) {
                             <span>${formatCurrency(fund.total)} raised</span>
                             <span>Goal: TBD</span>
                         </div>
-                        <p class="fund-bar-hint">Click to view project details &amp; volunteer</p>
+                        <p class="fund-bar-hint">Click to view details</p>
                     </div>`;
                 }
                 const pct = Math.min((fund.total / fund.goal) * 100, 100);
@@ -674,16 +674,16 @@ function showMemorialDetail() {
             <div class="memorial-status-badge">Project On Hold — Volunteers Needed</div>
             <div class="memorial-context">
                 <h3 class="memorial-section-heading">Background</h3>
-                <p>In 2017, MI Theta brothers successfully fundraised and closed out a $25,000 campaign to build an on-campus memorial at Lawrence Technological University honoring our chapter's legacy.</p>
+                <p>In 2017, MI Theta brothers successfully fundraised and closed out a $25,000 campaign to build an on-campus memorial at Lawrence Technological University honoring the fallen brothers of our chapter.</p>
                 <h3 class="memorial-section-heading">What Happened</h3>
-                <p>In 2019, a design concept was developed and site approvals were secured from Lawrence Tech as we planned for a ribbon-cutting ceremony to celebrate the chapter's 50th anniversary. Unfortunately, construction costs increased significantly in the years that followed, and the project was put on hold.</p>
+                <p>In 2019, a design concept was developed and site approvals were secured from Lawrence Tech as we planned to have the site completed before our chapter's 50th anniversary celebration in 2021. Unfortunately, in 2020 construction costs increased significantly and much uncertainty for campus arose, and the project was put on hold.</p>
                 <h3 class="memorial-section-heading">Where We Are Now</h3>
                 <p>The funds are still earmarked and the vision remains intact, but we need help from brothers who can volunteer their time, expertise, or connections to work with Lawrence Tech and get this project back on track. Whether you have experience in construction, project management, university relations, or simply want to lend a hand — we want to hear from you.</p>
             </div>
             <div class="memorial-cta">
                 <p class="memorial-cta-text">Interested in helping bring this memorial to life?</p>
                 <a href="${mailtoLink}" class="memorial-volunteer-btn">I Am Interested</a>
-                <p class="memorial-cta-contacts">Your message will be sent to Sam Moschelli, Rob Rochon, and the MI Theta AVC team.</p>
+                <p class="memorial-cta-contacts">Your message will be sent to Sam Moschelli, Rob Rochon, and the MI Theta AVC.</p>
             </div>
         </div>
     `;
