@@ -509,8 +509,8 @@ function renderFundProgress(fundData) {
     if (!container) return;
 
     const activeFunds = [
-        { name: 'Balanced Man Scholarship', total: fundData.bms.total, goal: fundData.bms.goal, completed: false },
-        { name: 'Leadership Fund', total: fundData.leadership.total, goal: fundData.leadership.goal, completed: false },
+        { name: 'Balanced Man Scholarship', total: fundData.bms.total, goal: fundData.bms.goal, completed: false, fundKey: 'bms' },
+        { name: 'Leadership Fund', total: fundData.leadership.total, goal: fundData.leadership.goal, completed: false, fundKey: 'leadership' },
     ];
 
     const completedFunds = [
@@ -541,7 +541,7 @@ function renderFundProgress(fundData) {
                         </div>
                         <div class="progress-bar-track">
                             <div class="progress-bar-fill-memorial" style="width: 100%">
-                                <span class="progress-bar-label">Fundraising Closed</span>
+                                <span class="progress-bar-label">Fundraising On Hold</span>
                             </div>
                         </div>
                         <div class="fund-bar-amounts">
@@ -554,9 +554,11 @@ function renderFundProgress(fundData) {
                 const pct = Math.min((fund.total / fund.goal) * 100, 100);
                 const fillClass = fund.completed ? 'progress-bar-fill-completed' : 'progress-bar-fill';
                 const label = fund.completed ? 'Completed' : `${Math.round(pct)}%`;
-                const clickableClass = fund.completed ? ' fund-bar-clickable' : '';
+                const clickableClass = (fund.completed || fund.fundKey) ? ' fund-bar-clickable' : '';
+                const dataAttr = fund.scholarshipKey ? `data-scholarship="${fund.scholarshipKey}"` : (fund.fundKey ? `data-fund="${fund.fundKey}"` : '');
+                const hintText = fund.completed ? 'Click to view scholarship details' : (fund.fundKey ? 'Click to learn more about this fund' : '');
                 return `
-                    <div class="fund-bar-item${clickableClass}" ${fund.scholarshipKey ? `data-scholarship="${fund.scholarshipKey}"` : ''}>
+                    <div class="fund-bar-item${clickableClass}" ${dataAttr}>
                         <div class="fund-bar-header">
                             <span class="fund-bar-name">${fund.name}</span>
                             ${fund.completed ? '<span class="fund-completed-badge">Completed</span>' : ''}
@@ -570,18 +572,20 @@ function renderFundProgress(fundData) {
                             <span>${formatCurrency(fund.total)} raised</span>
                             <span>Goal: ${formatCurrency(fund.goal)}</span>
                         </div>
-                        ${fund.completed ? '<p class="fund-bar-hint">Click to view scholarship details</p>' : ''}
+                        ${hintText ? `<p class="fund-bar-hint">${hintText}</p>` : ''}
                     </div>`;
             }).join('')}
         </div>
     `;
 
-    // Add click listeners to completed fund bars
+    // Add click listeners to clickable fund bars
     container.querySelectorAll('.fund-bar-clickable').forEach(el => {
         el.addEventListener('click', () => {
             const key = el.getAttribute('data-scholarship');
+            const fundKey = el.getAttribute('data-fund');
             if (key) showScholarshipDetail(key);
             if (el.getAttribute('data-memorial')) showMemorialDetail();
+            if (fundKey) showActiveFundDetail(fundKey);
         });
     });
 
@@ -599,6 +603,7 @@ async function showScholarshipDetail(key) {
         return;
     }
     openScholarshipKey = key;
+    openActiveFundKey = null;
 
     // Lazy load scholarship data
     if (!scholarshipData) {
@@ -637,6 +642,86 @@ async function showScholarshipDetail(key) {
         </div>
     `;
 
+    show(container);
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+let openActiveFundKey = null;
+
+function showActiveFundDetail(key) {
+    const container = document.getElementById('scholarship-detail');
+    if (!container) return;
+
+    // Toggle
+    if (openActiveFundKey === key && !container.classList.contains('hidden')) {
+        hide(container);
+        openActiveFundKey = null;
+        return;
+    }
+    openActiveFundKey = key;
+    openScholarshipKey = null;
+
+    const DONATE_BMS = 'https://give.sigep.org/give/211213/?_ga=2.62207717.837129945.1670203913-1808852390.1670203913#!/donation/checkout?designation=155554';
+    const DONATE_LEADERSHIP = 'https://give.sigep.org/give/211213/?_ga=2.62207717.837129945.1670203913-1808852390.1670203913#!/donation/checkout?designation=155555';
+
+    let html = '';
+
+    if (key === 'bms') {
+        html = `
+        <div class="card scholarship-card active-fund-card">
+            <h2 class="scholarship-title">Balanced Man Scholarship Endowment</h2>
+            <div class="accent-divider"></div>
+            <p class="active-fund-goal-note">Goal: $125,000 &mdash; fully funds a <strong>$5,000 annual scholarship</strong> matched by Lawrence Tech for a combined <strong>$10,000 award</strong></p>
+            <div class="active-fund-section">
+                <h3 class="active-fund-heading">What This Fund Does</h3>
+                <p>The Balanced Man Scholarship Endowment supports the recruitment of the best men on campus at Lawrence Technological University by offering a competitive scholarship to outstanding incoming male freshman students. Once fully funded at $125,000, the endowment will generate $5,000 annually — and Lawrence Tech has committed to matching that award dollar-for-dollar, bringing the total scholarship to $10,000 for potential new members.</p>
+            </div>
+            <div class="active-fund-section">
+                <h3 class="active-fund-heading">Why It Matters</h3>
+                <p>The Balanced Man Scholarship is one of the most powerful recruitment tools in the SigEp playbook. It introduces high-achieving freshman students to the chapter with no obligation to join, creating meaningful relationships with the best men on campus right from the start. SigEp offers this scholarship at over 140 universities nationally, and MI Theta's endowment ensures our chapter can compete for top talent at Lawrence Tech year after year.</p>
+            </div>
+            <div class="active-fund-donate">
+                <a href="${DONATE_BMS}" class="active-fund-donate-btn" target="_blank" rel="noopener noreferrer">Support the BMS Fund</a>
+            </div>
+        </div>`;
+    } else if (key === 'leadership') {
+        html = `
+        <div class="card scholarship-card active-fund-card">
+            <h2 class="scholarship-title">Leadership Fund Endowment</h2>
+            <div class="accent-divider"></div>
+            <p class="active-fund-goal-note">Covers registration &amp; travel for brothers attending SigEp&rsquo;s most prestigious national leadership programs</p>
+            <div class="active-fund-section">
+                <h3 class="active-fund-heading">What This Fund Does</h3>
+                <p>The Leadership Fund supports active undergraduate members by covering registration and travel costs to attend the National Fraternity's premier leadership development events. These programs are transformative experiences that shape the next generation of leaders — and our endowment ensures no brother misses out due to cost.</p>
+            </div>
+            <div class="active-fund-section">
+                <h3 class="active-fund-heading">Programs We Fund</h3>
+                <div class="active-fund-programs">
+                    <div class="active-fund-program-item">
+                        <span class="active-fund-program-name"><a href="https://sigep.org/the-sigep-experience/events/ruck/" target="_blank" rel="noopener noreferrer">Ruck Leadership Institute</a></span>
+                        <span class="active-fund-program-desc">SigEp's landmark leadership program, held annually in Richmond, VA. Scholars are selected competitively and work with executive-level alumni mentors to develop real leadership skills. MI Theta has sent at least one brother to Ruck every year since 2005.</span>
+                    </div>
+                    <div class="active-fund-program-item">
+                        <span class="active-fund-program-name"><a href="https://sigep.org/the-sigep-experience/events/tragos-quest-to-greece/" target="_blank" rel="noopener noreferrer">Tragos Quest to Greece</a></span>
+                        <span class="active-fund-program-desc">An unmatched study abroad experience exploring the Greek origins of SigEp's values, philosophy, and the Balanced Man ideal — visiting Athens, Delphi, Olympia, and more. MI Theta has produced five Tragos Scholars since 2012.</span>
+                    </div>
+                    <div class="active-fund-program-item">
+                        <span class="active-fund-program-name"><a href="https://sigep.org/the-sigep-experience/events/carlson/" target="_blank" rel="noopener noreferrer">Carlson Leadership Academies</a></span>
+                        <span class="active-fund-program-desc">Each winter, new executive board officers attend Carlson to step confidently into their roles with clear goals and skills tailored to their position — from President to VP of Recruitment. Countless MI Theta brothers have been sponsored to attend.</span>
+                    </div>
+                    <div class="active-fund-program-item">
+                        <span class="active-fund-program-name"><a href="https://sigep.org/the-sigep-experience/events/grand-chapter-conclave/" target="_blank" rel="noopener noreferrer">Grand Chapter Conclave</a></span>
+                        <span class="active-fund-program-desc">SigEp's biennial national gathering where brothers celebrate chapter success, including the prestigious Buchanan Cup, while developing leadership and life skills alongside brothers from across the country.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="active-fund-donate">
+                <a href="${DONATE_LEADERSHIP}" class="active-fund-donate-btn active-fund-donate-btn-alt" target="_blank" rel="noopener noreferrer">Support the Leadership Fund</a>
+            </div>
+        </div>`;
+    }
+
+    container.innerHTML = html;
     show(container);
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

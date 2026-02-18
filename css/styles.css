@@ -1543,3 +1543,99 @@ main {
         grid-template-columns: repeat(5, 1fr);
     }
 }
+
+/* ========================================
+   Active Fund Detail Panels (BMS / Leadership)
+   ======================================== */
+
+.active-fund-card {
+    margin-top: 20px;
+}
+
+.active-fund-goal-note {
+    font-size: 1rem;
+    color: var(--sigep-text-light);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.active-fund-section {
+    margin-bottom: 20px;
+}
+
+.active-fund-heading {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--sigep-purple);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.active-fund-programs {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.active-fund-program-item {
+    background: #faf5f9;
+    border-left: 4px solid var(--sigep-purple-light);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+}
+
+.active-fund-program-name {
+    display: block;
+    font-weight: 700;
+    color: var(--sigep-purple);
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.active-fund-program-name a {
+    color: var(--sigep-purple);
+    text-decoration: none;
+}
+
+.active-fund-program-name a:hover {
+    text-decoration: underline;
+}
+
+.active-fund-program-desc {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--sigep-text-light);
+    line-height: 1.55;
+}
+
+.active-fund-donate {
+    text-align: center;
+    margin-top: 24px;
+}
+
+.active-fund-donate-btn {
+    display: inline-block;
+    background: var(--sigep-red);
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.active-fund-donate-btn:hover {
+    background: #c01d14;
+    transform: translateY(-1px);
+}
+
+.active-fund-donate-btn-alt {
+    background: var(--sigep-purple);
+}
+
+.active-fund-donate-btn-alt:hover {
+    background: var(--sigep-purple-light);
+}
