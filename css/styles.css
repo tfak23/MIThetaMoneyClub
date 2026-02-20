@@ -91,6 +91,46 @@ main {
     opacity: 0.9;
 }
 
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.header-text {
+    flex: 1;
+    text-align: center;
+}
+
+.share-btn {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--sigep-white);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.share-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.share-btn.share-copied {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: var(--sigep-white);
+}
+
 /* ===========================
    Cards
    =========================== */
@@ -721,6 +761,15 @@ main {
     font-size: 0.9rem;
     line-height: 1.6;
     margin-bottom: 20px;
+}
+
+.scholarship-campaign-note {
+    font-size: 0.8rem;
+    color: var(--sigep-text-light);
+    background: var(--sigep-light-gray);
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
     text-align: center;
 }
 
@@ -797,6 +846,13 @@ main {
     font-weight: 700;
     color: var(--sigep-dark);
     margin-bottom: 8px;
+}
+
+.levels-subtext {
+    font-size: 0.85rem;
+    color: var(--sigep-text-light);
+    margin-bottom: 20px;
+    font-style: italic;
 }
 
 .levels-grid {
@@ -1253,6 +1309,7 @@ main {
 .decade-card-btn {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
     background: linear-gradient(135deg, #f3e8f9, #ede0f5);
     border: 2px solid var(--sigep-purple);
@@ -1272,6 +1329,14 @@ main {
     font-size: 1rem;
     font-weight: 700;
     color: var(--sigep-dark);
+}
+
+.decade-btn-subtext {
+    width: 100%;
+    font-size: 0.75rem;
+    color: var(--sigep-text-light);
+    font-style: italic;
+    margin-top: -4px;
 }
 
 .decade-icon {

@@ -1,4 +1,44 @@
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    initShareButton();
+});
+
+function initShareButton() {
+    const btn = document.getElementById('share-btn');
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+        const shareData = {
+            title: 'MI Theta Money Club',
+            text: 'Check out the MI Theta Money Club — look up giving levels and support our chapter!',
+            url: window.location.href
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                // User cancelled or share failed — ignore
+            }
+        } else {
+            // Fallback: copy link to clipboard
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                btn.classList.add('share-copied');
+                btn.setAttribute('aria-label', 'Link copied!');
+                setTimeout(() => {
+                    btn.classList.remove('share-copied');
+                    btn.setAttribute('aria-label', 'Share this page');
+                }, 2000);
+            } catch (err) {
+                // Last resort: prompt with mailto/sms options
+                const subject = encodeURIComponent('Check out MI Theta Money Club');
+                const body = encodeURIComponent('Check out the MI Theta Money Club: ' + window.location.href);
+                window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+            }
+        }
+    });
+}
 
 // Module-level members array for use by level click handlers
 let allMembers = [];
@@ -424,6 +464,7 @@ function renderDecadeCard() {
         <div class="decade-card-btn">
             <div class="decade-icon">&#9876;&#65039;</div>
             <h3 class="decade-btn-label">Decades Battle</h3>
+            <p class="decade-btn-subtext">Organized by join date</p>
         </div>
     `;
     container.addEventListener('click', () => showDecadeLeaderboard());
@@ -519,7 +560,7 @@ function renderFundProgress(fundData) {
     ];
 
     const memorialFund = [
-        { name: 'On Campus Memorial', total: 25000, goal: null, memorial: true },
+        { name: 'Campus Memorial', total: 25000, goal: null, memorial: true },
     ];
 
     const allFunds = [...activeFunds, ...completedFunds, ...memorialFund];
@@ -548,7 +589,7 @@ function renderFundProgress(fundData) {
                             <span>${formatCurrency(fund.total)} raised</span>
                             <span>Goal: TBD</span>
                         </div>
-                        <p class="fund-bar-hint">Click to view details</p>
+                        <p class="fund-bar-hint">Click to view more</p>
                     </div>`;
                 }
                 const pct = Math.min((fund.total / fund.goal) * 100, 100);
@@ -556,7 +597,7 @@ function renderFundProgress(fundData) {
                 const label = fund.completed ? 'Completed' : `${Math.round(pct)}%`;
                 const clickableClass = (fund.completed || fund.fundKey) ? ' fund-bar-clickable' : '';
                 const dataAttr = fund.scholarshipKey ? `data-scholarship="${fund.scholarshipKey}"` : (fund.fundKey ? `data-fund="${fund.fundKey}"` : '');
-                const hintText = fund.completed ? 'Click to view scholarship details' : (fund.fundKey ? 'Click to learn more about this fund' : '');
+                const hintText = (fund.completed || fund.fundKey) ? 'Click to view more' : '';
                 return `
                     <div class="fund-bar-item${clickableClass}" ${dataAttr}>
                         <div class="fund-bar-header">
@@ -630,6 +671,7 @@ async function showScholarshipDetail(key) {
             <h2 class="scholarship-title">${title}</h2>
             <div class="accent-divider"></div>
             <p class="scholarship-purpose">${escapeHtml(info.purpose)}</p>
+            ${key === 'jurewicz' ? '<p class="scholarship-campaign-note">The JJ Scholarship and Campus Memorial efforts were launched together in 2009 as one campaign.</p>' : ''}
             <h3 class="scholarship-recipients-heading">Past Recipients</h3>
             <div class="scholarship-recipients">
                 ${info.recipients.map(r => `
@@ -689,13 +731,13 @@ function showActiveFundDetail(key) {
         <div class="card scholarship-card active-fund-card">
             <h2 class="scholarship-title">Leadership Fund Endowment</h2>
             <div class="accent-divider"></div>
-            <p class="active-fund-goal-note">Covers registration &amp; travel for brothers attending SigEp&rsquo;s most prestigious national leadership programs</p>
+            <p class="active-fund-goal-note">Once fully funded, the endowment will produce <strong>$3,000 annually</strong> to support sending undergraduates to the Leadership Continuum</p>
             <div class="active-fund-section">
                 <h3 class="active-fund-heading">What This Fund Does</h3>
                 <p>The Leadership Fund supports active undergraduate members by covering registration and travel costs to attend the National Fraternity's premier leadership development events. These programs are transformative experiences that shape the next generation of leaders — and our endowment ensures no brother misses out due to cost.</p>
             </div>
             <div class="active-fund-section">
-                <h3 class="active-fund-heading">Programs We Fund</h3>
+                <h3 class="active-fund-heading">Leadership Continuum</h3>
                 <div class="active-fund-programs">
                     <div class="active-fund-program-item">
                         <span class="active-fund-program-name"><a href="https://sigep.org/the-sigep-experience/events/ruck/" target="_blank" rel="noopener noreferrer">Ruck Leadership Institute</a></span>
@@ -745,13 +787,13 @@ function showMemorialDetail() {
     hide(document.getElementById('scholarship-detail'));
 
     const emailTo = 'sigepsam@gmail.com,rrochon1901@gmail.com,sigep.mitheta.alumni@gmail.com';
-    const emailSubject = encodeURIComponent('On Campus Memorial - Volunteer Interest');
+    const emailSubject = encodeURIComponent('Campus Memorial - Volunteer Interest');
     const emailBody = encodeURIComponent('Hello,\n\nI am interested in volunteering to help support the MI Theta On Campus Memorial project at Lawrence Tech. Please let me know how I can get involved.\n\nThank you!');
     const mailtoLink = `mailto:${emailTo}?subject=${emailSubject}&body=${emailBody}`;
 
     container.innerHTML = `
         <div class="card memorial-card">
-            <h2 class="memorial-title">On Campus Memorial</h2>
+            <h2 class="memorial-title">Campus Memorial</h2>
             <div class="accent-divider"></div>
             <div class="memorial-image-container">
                 <img src="assets/badges/memorial.jpg" alt="On Campus Memorial Design Concept" class="memorial-image" />
@@ -759,7 +801,7 @@ function showMemorialDetail() {
             <div class="memorial-status-badge">Project On Hold — Volunteers Needed</div>
             <div class="memorial-context">
                 <h3 class="memorial-section-heading">Background</h3>
-                <p>In 2017, MI Theta brothers successfully fundraised and closed out a $25,000 campaign to build an on-campus memorial at Lawrence Technological University honoring the fallen brothers of our chapter.</p>
+                <p>In 2009, MI Theta brothers launched a combined campaign to establish the John Jurewicz II Burning Heart Scholarship and build an on-campus memorial honoring the fallen brothers of our chapter. The memorial effort ultimately raised $25,000, closing out its fundraising in 2017.</p>
                 <h3 class="memorial-section-heading">What Happened</h3>
                 <p>In 2019, a design concept was developed and site approvals were secured from Lawrence Tech as we planned to have the site completed before our chapter's 50th anniversary celebration in 2021. Unfortunately, in 2020 construction costs increased significantly and much uncertainty for campus arose, and the project was put on hold.</p>
                 <h3 class="memorial-section-heading">Where We Are Now</h3>
@@ -768,7 +810,6 @@ function showMemorialDetail() {
             <div class="memorial-cta">
                 <p class="memorial-cta-text">Interested in helping bring this memorial to life?</p>
                 <a href="${mailtoLink}" class="memorial-volunteer-btn">I Am Interested</a>
-                <p class="memorial-cta-contacts">Your message will be sent to Sam Moschelli, Rob Rochon, and the MI Theta AVC.</p>
             </div>
         </div>
     `;
