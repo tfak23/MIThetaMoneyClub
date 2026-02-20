@@ -464,7 +464,6 @@ function renderDecadeCard() {
         <div class="decade-card-btn">
             <div class="decade-icon">&#9876;&#65039;</div>
             <h3 class="decade-btn-label">Decades Battle</h3>
-            <p class="decade-btn-subtext">Organized by join date</p>
         </div>
     `;
     container.addEventListener('click', () => showDecadeLeaderboard());
@@ -538,6 +537,7 @@ function showDecadeLeaderboard() {
                         </div>`;
                 }).join('')}
             </div>
+            <p class="decade-chart-subtext">Organized by join date</p>
         </div>
     `;
 
