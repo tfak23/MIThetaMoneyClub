@@ -1552,12 +1552,12 @@ main {
 }
 
 /* Tier row backgrounds */
-.monthly-tier-bronze { background: linear-gradient(135deg, #fce4c1, #f5d6a8); }
-.monthly-tier-silver { background: linear-gradient(135deg, #e8e8e8, #d9d9d9); }
-.monthly-tier-gold { background: linear-gradient(135deg, #fff8e1, #f5e6b8); }
-.monthly-tier-epic { background: linear-gradient(135deg, #f3e5f5, #e8d5eb); }
-.monthly-tier-legendary { background: linear-gradient(135deg, #fde8e8, #f5c6c6); }
-.monthly-tier-mythic { background: linear-gradient(135deg, #2a2a3e, #1a1a2e); }
+.monthly-tier-bronze { background: linear-gradient(135deg, #fef3e4, #fcecd6); }
+.monthly-tier-silver { background: linear-gradient(135deg, #f3f3f3, #ececec); }
+.monthly-tier-gold { background: linear-gradient(135deg, #fffcf0, #fdf5dc); }
+.monthly-tier-epic { background: linear-gradient(135deg, #f9f2fb, #f3e9f6); }
+.monthly-tier-legendary { background: linear-gradient(135deg, #fef2f2, #fde4e4); }
+.monthly-tier-mythic { background: linear-gradient(135deg, #3a3a50, #2a2a3e); }
 .monthly-tier-mythic .monthly-name { color: #ffd700; }
 .monthly-tier-mythic .monthly-rank { color: rgba(255, 255, 255, 0.6); }
 .monthly-tier-mythic .monthly-streak { color: #ffd700; }
@@ -1567,7 +1567,7 @@ main {
         display: none;
     }
     .monthly-milestone {
-        display: none;
+        display: none !important;
     }
 }
 
