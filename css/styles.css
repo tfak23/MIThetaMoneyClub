@@ -1516,6 +1516,22 @@ main {
     gap: 0;
 }
 
+.monthly-donors-col-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 6px 12px 2px;
+}
+
+.monthly-col-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--sigep-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 55px;
+    text-align: right;
+}
+
 .monthly-donor-item {
     display: flex;
     align-items: center;

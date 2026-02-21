@@ -621,7 +621,7 @@ function showMonthlyDonors() {
                 <span class="monthly-rank">${i + 1}</span>
                 <span class="monthly-name">${escapeHtml(d.name)}</span>
                 <span class="monthly-badges">${fundBadges(d.fund)}</span>
-                <span class="monthly-streak">${d.streak} mo${milestoneHtml}</span>
+                <span class="monthly-streak">${d.streak}${milestoneHtml}</span>
             </div>`;
     }).join('');
 
@@ -635,6 +635,9 @@ function showMonthlyDonors() {
                 </div>
             </div>
             <div class="accent-divider"></div>
+            <div class="monthly-donors-col-header">
+                <span class="monthly-col-label">Months</span>
+            </div>
             <div class="monthly-donors-list">
                 ${rows}
             </div>
