@@ -1,0 +1,203 @@
+// ===========================
+// Campaigns — ALL manual, triggered via dashboard buttons
+// ===========================
+
+/**
+ * Get recipients for a specific campaign type (for preview before sending).
+ * @param {string} type - one of: new-donor, quarterly, lapsed, past-donors, non-donors
+ * @returns {Object[]} Array of { roll, fullName, email, segment, extra }
+ */
+function getRecipientList(type) {
+  var profiles = buildDonorProfiles();
+  var log = getEmailLog();
+  var recipients = [];
+
+  if (type === 'new-donor') {
+    var thankedRolls = new Set(
+      log.filter(function(e) { return e.type === 'new-donor-thanks'; }).map(function(e) { return e.roll; })
+    );
+    recipients = profiles.filter(function(p) {
+      return p.segment === 'new-donor' && !thankedRolls.has(p.roll);
+    }).map(function(p) {
+      return { roll: p.roll, fullName: p.fullName, email: p.email, segment: p.segment, extra: formatDollars(p.currentYearAmt) + ' this year' };
+    });
+
+  } else if (type === 'quarterly') {
+    var now = new Date();
+    var quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+    var alreadySent = new Set(
+      log.filter(function(e) {
+        return e.type === 'quarterly-thanks' && new Date(e.date) >= quarterStart;
+      }).map(function(e) { return e.roll; })
+    );
+    recipients = profiles.filter(function(p) {
+      return p.isMonthlyDonor && !alreadySent.has(p.roll);
+    }).map(function(p) {
+      return { roll: p.roll, fullName: p.fullName, email: p.email, segment: 'monthly-donor', extra: p.streak + ' month streak (' + p.fund + ')' };
+    });
+
+  } else if (type === 'lapsed') {
+    var prevStreaks = new Map();
+    for (var i = 0; i < log.length; i++) {
+      var entry = log[i];
+      if (entry.type === 'quarterly-thanks' && entry.prevStreak > 1) {
+        var current = prevStreaks.get(entry.roll) || 0;
+        if (entry.prevStreak > current) prevStreaks.set(entry.roll, entry.prevStreak);
+      }
+    }
+    var recentLapsedRolls = new Set(
+      log.filter(function(e) {
+        if (e.type !== 'lapsed-reengagement') return false;
+        var daysSince = (Date.now() - new Date(e.date).getTime()) / (1000 * 60 * 60 * 24);
+        return daysSince < 90;
+      }).map(function(e) { return e.roll; })
+    );
+    recipients = profiles.filter(function(p) {
+      if (recentLapsedRolls.has(p.roll)) return false;
+      var prev = prevStreaks.get(p.roll) || 0;
+      return prev > 1 && p.streak <= 1;
+    }).map(function(p) {
+      var prev = prevStreaks.get(p.roll) || 0;
+      return { roll: p.roll, fullName: p.fullName, email: p.email, segment: 'lapsed', extra: 'Previous streak: ' + prev + ' months' };
+    });
+
+  } else if (type === 'past-donors') {
+    var now2 = new Date();
+    var halfYearStart = now2.getMonth() < 6
+      ? new Date(now2.getFullYear(), 0, 1)
+      : new Date(now2.getFullYear(), 6, 1);
+    var alreadySent2 = new Set(
+      log.filter(function(e) {
+        return e.type === 'annual-past' && new Date(e.date) >= halfYearStart;
+      }).map(function(e) { return e.roll; })
+    );
+    recipients = profiles.filter(function(p) {
+      return p.segment === 'past-donor' && !alreadySent2.has(p.roll);
+    }).map(function(p) {
+      return { roll: p.roll, fullName: p.fullName, email: p.email, segment: p.segment, extra: formatDollars(p.totalDonations) + ' lifetime' };
+    });
+
+  } else if (type === 'non-donors') {
+    var now3 = new Date();
+    var halfYearStart2 = now3.getMonth() < 6
+      ? new Date(now3.getFullYear(), 0, 1)
+      : new Date(now3.getFullYear(), 6, 1);
+    var alreadySent3 = new Set(
+      log.filter(function(e) {
+        return e.type === 'annual-nondonor' && new Date(e.date) >= halfYearStart2;
+      }).map(function(e) { return e.roll; })
+    );
+    recipients = profiles.filter(function(p) {
+      return p.segment === 'non-donor' && !alreadySent3.has(p.roll);
+    }).map(function(p) {
+      return { roll: p.roll, fullName: p.fullName, email: p.email, segment: p.segment, extra: 'No donations' };
+    });
+  }
+
+  return recipients;
+}
+
+/**
+ * Send a campaign to selected recipients (after reviewing the list).
+ * @param {string} type - campaign type
+ * @param {string[]} rollsToSend - array of roll numbers to send to (omitted rolls are excluded)
+ * @returns {string} status message
+ */
+function sendCampaign(type, rollsToSend) {
+  var profiles = buildDonorProfiles();
+  var profileMap = new Map(profiles.map(function(p) { return [p.roll, p]; }));
+  var log = getEmailLog();
+  var remaining = getRemainingQuota();
+
+  if (remaining <= 0) {
+    return 'Daily email limit reached (0 remaining). Try again tomorrow.';
+  }
+
+  // For lapsed donors, build prevStreaks map
+  var prevStreaks = new Map();
+  if (type === 'lapsed') {
+    for (var i = 0; i < log.length; i++) {
+      var entry = log[i];
+      if (entry.type === 'quarterly-thanks' && entry.prevStreak > 1) {
+        var current = prevStreaks.get(entry.roll) || 0;
+        if (entry.prevStreak > current) prevStreaks.set(entry.roll, entry.prevStreak);
+      }
+    }
+  }
+
+  var emailTypeMap = {
+    'new-donor': 'new-donor-thanks',
+    'quarterly': 'quarterly-thanks',
+    'lapsed': 'lapsed-reengagement',
+    'past-donors': 'annual-past',
+    'non-donors': 'annual-nondonor'
+  };
+  var emailType = emailTypeMap[type] || type;
+
+  var sent = 0;
+  var failed = 0;
+  var skipped = 0;
+
+  for (var j = 0; j < rollsToSend.length; j++) {
+    if (sent >= remaining) {
+      skipped = rollsToSend.length - j;
+      break;
+    }
+
+    var roll = rollsToSend[j];
+    var donor = profileMap.get(roll);
+    if (!donor) { failed++; continue; }
+
+    var emailData;
+    if (type === 'new-donor') {
+      emailData = newDonorThankYou(donor);
+    } else if (type === 'quarterly') {
+      emailData = quarterlyThankYouTemplate(donor);
+    } else if (type === 'lapsed') {
+      var prev = prevStreaks.get(roll) || 0;
+      var enrichedDonor = {};
+      for (var key in donor) enrichedDonor[key] = donor[key];
+      enrichedDonor.prevStreak = prev;
+      emailData = lapsedReengagement(enrichedDonor);
+    } else if (type === 'past-donors') {
+      emailData = annualPastDonor(donor);
+    } else if (type === 'non-donors') {
+      emailData = annualNonDonor(donor);
+    } else {
+      failed++;
+      continue;
+    }
+
+    if (sendEmail(donor.email, emailData.subject, emailData.html)) {
+      logEmailSent(donor.roll, emailType, donor.streak || 0, donor.email);
+      sent++;
+    } else {
+      failed++;
+    }
+  }
+
+  var msg = 'Sent ' + sent + ' emails.';
+  if (failed > 0) msg += ' ' + failed + ' failed.';
+  if (skipped > 0) msg += ' ' + skipped + ' skipped (daily limit). Run again tomorrow.';
+  return msg;
+}
+
+/**
+ * Get campaign status for the dashboard.
+ * @returns {Object} status info
+ */
+function getCampaignStatus() {
+  var sentToday = getEmailsSentToday();
+  var log = getEmailLog();
+
+  var lastSend = 'Never';
+  if (log.length > 0) {
+    lastSend = new Date(log[log.length - 1].date).toLocaleDateString();
+  }
+
+  return {
+    sentToday: sentToday,
+    dailyLimit: EMAIL_CONFIG.DAILY_LIMIT,
+    lastSend: lastSend
+  };
+}

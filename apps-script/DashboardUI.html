@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; padding: 12px; background: #f9f9f9; color: #333; font-size: 13px; }
+
+    h2 { font-size: 16px; color: #6A1B4D; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    h3 { font-size: 12px; color: #9B1B30; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .section { background: #fff; border-radius: 8px; padding: 10px; margin-bottom: 10px; border: 1px solid #e0e0e0; }
+
+    .btn { display: block; width: 100%; padding: 8px 10px; margin: 4px 0; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-preview { background: #6A1B4D; color: #fff; }
+    .btn-campaign { background: #9B1B30; color: #fff; }
+    .btn-send { background: #2e7d32; color: #fff; font-size: 13px; padding: 10px; }
+    .btn-back { background: #999; color: #fff; }
+    .btn-select { background: #e0e0e0; color: #333; font-size: 11px; padding: 6px; display: inline-block; width: auto; margin: 2px; }
+
+    .status-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px; border-bottom: 1px solid #f0f0f0; }
+    .status-row:last-child { border-bottom: none; }
+    .status-label { color: #999; }
+    .status-value { font-weight: bold; color: #333; }
+
+    .msg { font-size: 12px; padding: 8px; border-radius: 4px; margin-top: 6px; display: none; }
+    .msg-success { background: #e8f5e9; color: #2e7d32; }
+    .msg-error { background: #fbe9e7; color: #c62828; }
+    .msg-info { background: #e3f2fd; color: #1565c0; }
+
+    .spinner { display: none; text-align: center; padding: 6px; font-size: 12px; color: #999; }
+
+    /* Recipient list */
+    .recipient-list { max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 6px; margin: 8px 0; }
+    .recipient-item { display: flex; align-items: center; padding: 6px 8px; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+    .recipient-item:last-child { border-bottom: none; }
+    .recipient-item:hover { background: #f9f9f9; }
+    .recipient-item.omitted { opacity: 0.4; text-decoration: line-through; }
+    .recipient-cb { margin-right: 8px; flex-shrink: 0; }
+    .recipient-info { flex: 1; min-width: 0; }
+    .recipient-name { font-weight: bold; color: #333; display: block; }
+    .recipient-detail { color: #999; font-size: 11px; display: block; }
+    .recipient-count { font-size: 12px; color: #6A1B4D; font-weight: bold; margin: 6px 0; }
+    .select-controls { margin: 4px 0; }
+
+    /* Views */
+    #main-view, #list-view { display: block; }
+    #list-view { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ======= MAIN VIEW ======= -->
+  <div id="main-view">
+    <h2>Email Dashboard</h2>
+
+    <!-- Status -->
+    <div class="section">
+      <h3>Status</h3>
+      <div class="status-row">
+        <span class="status-label">Emails sent today</span>
+        <span class="status-value" id="sent-today">Loading...</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Last email sent</span>
+        <span class="status-value" id="last-send">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="section">
+      <h3>Test / Preview</h3>
+      <p style="font-size:10px;color:#999;margin-bottom:6px;">Sends sample to test recipients (Tony, Sam, Joe)</p>
+      <button class="btn btn-preview" onclick="preview('new-donor')">Preview New Donor Email</button>
+      <button class="btn btn-preview" onclick="preview('quarterly')">Preview Quarterly Email</button>
+      <button class="btn btn-preview" onclick="preview('lapsed')">Preview Lapsed Email</button>
+      <button class="btn btn-preview" onclick="preview('past-donor')">Preview Past Donor Email</button>
+      <button class="btn btn-preview" onclick="preview('non-donor')">Preview Non-Donor Email</button>
+      <div id="preview-spinner" class="spinner">Sending preview...</div>
+      <div id="preview-msg" class="msg"></div>
+    </div>
+
+    <!-- Send Campaigns -->
+    <div class="section">
+      <h3>Send Campaigns</h3>
+      <p style="font-size:10px;color:#999;margin-bottom:6px;">Click to see recipients, review, then send</p>
+      <button class="btn btn-campaign" onclick="loadRecipients('new-donor')">New Donor Thank-Yous</button>
+      <button class="btn btn-campaign" onclick="loadRecipients('quarterly')">Quarterly Monthly Donor Thanks</button>
+      <button class="btn btn-campaign" onclick="loadRecipients('lapsed')">Lapsed Monthly Donors</button>
+      <button class="btn btn-campaign" onclick="loadRecipients('past-donors')">Annual: Past Donors</button>
+      <button class="btn btn-campaign" onclick="loadRecipients('non-donors')">Annual: Non-Donors</button>
+      <div id="campaign-spinner" class="spinner">Loading recipients...</div>
+      <div id="campaign-msg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- ======= RECIPIENT LIST VIEW ======= -->
+  <div id="list-view">
+    <h2 id="list-title">Recipients</h2>
+    <p class="recipient-count" id="list-count"></p>
+
+    <div class="select-controls">
+      <button class="btn btn-select" onclick="selectAll()">Select All</button>
+      <button class="btn btn-select" onclick="deselectAll()">Deselect All</button>
+    </div>
+
+    <div class="recipient-list" id="recipient-list"></div>
+
+    <p class="recipient-count" id="selected-count"></p>
+
+    <button class="btn btn-send" id="btn-send" onclick="sendSelected()">Send to Selected Recipients</button>
+    <button class="btn btn-back" onclick="backToMain()">Back</button>
+
+    <div id="send-spinner" class="spinner">Sending emails...</div>
+    <div id="send-msg" class="msg"></div>
+  </div>
+
+  <script>
+    var currentType = '';
+    var currentRecipients = [];
+
+    // Load status on open
+    google.script.run.withSuccessHandler(updateStatus).getDashboardStatus();
+
+    function updateStatus(status) {
+      document.getElementById('sent-today').textContent = status.sentToday + ' / ' + status.dailyLimit;
+      document.getElementById('last-send').textContent = status.lastSend;
+    }
+
+    function showMsg(id, text, type) {
+      var el = document.getElementById(id);
+      el.className = 'msg msg-' + type;
+      el.textContent = text;
+      el.style.display = 'block';
+    }
+
+    // ---- Preview ----
+    function preview(type) {
+      var spinner = document.getElementById('preview-spinner');
+      var msg = document.getElementById('preview-msg');
+      spinner.style.display = 'block';
+      msg.style.display = 'none';
+      document.querySelectorAll('.btn-preview').forEach(function(b) { b.disabled = true; });
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          spinner.style.display = 'none';
+          showMsg('preview-msg', result, 'success');
+          document.querySelectorAll('.btn-preview').forEach(function(b) { b.disabled = false; });
+        })
+        .withFailureHandler(function(err) {
+          spinner.style.display = 'none';
+          showMsg('preview-msg', 'Error: ' + err.message, 'error');
+          document.querySelectorAll('.btn-preview').forEach(function(b) { b.disabled = false; });
+        })
+        .previewEmail(type);
+    }
+
+    // ---- Load recipient list ----
+    function loadRecipients(type) {
+      currentType = type;
+      var spinner = document.getElementById('campaign-spinner');
+      spinner.style.display = 'block';
+      document.querySelectorAll('.btn-campaign').forEach(function(b) { b.disabled = true; });
+
+      google.script.run
+        .withSuccessHandler(function(recipients) {
+          spinner.style.display = 'none';
+          document.querySelectorAll('.btn-campaign').forEach(function(b) { b.disabled = false; });
+
+          if (!recipients || recipients.length === 0) {
+            showMsg('campaign-msg', 'No recipients found for this campaign. All may have been sent already.', 'info');
+            return;
+          }
+
+          currentRecipients = recipients;
+          showRecipientList(type, recipients);
+        })
+        .withFailureHandler(function(err) {
+          spinner.style.display = 'none';
+          showMsg('campaign-msg', 'Error: ' + err.message, 'error');
+          document.querySelectorAll('.btn-campaign').forEach(function(b) { b.disabled = false; });
+        })
+        .getDashboardRecipients(type);
+    }
+
+    // ---- Render recipient list ----
+    var typeLabels = {
+      'new-donor': 'New Donor Thank-Yous',
+      'quarterly': 'Quarterly Monthly Donor Thanks',
+      'lapsed': 'Lapsed Monthly Donors',
+      'past-donors': 'Annual: Past Donors',
+      'non-donors': 'Annual: Non-Donors'
+    };
+
+    function showRecipientList(type, recipients) {
+      document.getElementById('main-view').style.display = 'none';
+      document.getElementById('list-view').style.display = 'block';
+      document.getElementById('list-title').textContent = typeLabels[type] || type;
+      document.getElementById('list-count').textContent = recipients.length + ' recipients found';
+      document.getElementById('send-msg').style.display = 'none';
+
+      var listEl = document.getElementById('recipient-list');
+      listEl.innerHTML = '';
+
+      for (var i = 0; i < recipients.length; i++) {
+        var r = recipients[i];
+        var div = document.createElement('div');
+        div.className = 'recipient-item';
+        div.setAttribute('data-roll', r.roll);
+
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'recipient-cb';
+        cb.checked = true;
+        cb.setAttribute('data-roll', r.roll);
+        cb.addEventListener('change', function() {
+          this.parentElement.classList.toggle('omitted', !this.checked);
+          updateSelectedCount();
+        });
+
+        var info = document.createElement('div');
+        info.className = 'recipient-info';
+        info.innerHTML = '<span class="recipient-name">' + escapeHtml(r.fullName) + '</span>'
+          + '<span class="recipient-detail">#' + escapeHtml(r.roll) + ' &middot; ' + escapeHtml(r.email) + ' &middot; ' + escapeHtml(r.extra) + '</span>';
+
+        div.appendChild(cb);
+        div.appendChild(info);
+        listEl.appendChild(div);
+      }
+
+      updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+      var checked = document.querySelectorAll('#recipient-list .recipient-cb:checked');
+      var total = document.querySelectorAll('#recipient-list .recipient-cb');
+      document.getElementById('selected-count').textContent = checked.length + ' of ' + total.length + ' selected to send';
+      document.getElementById('btn-send').disabled = checked.length === 0;
+    }
+
+    function selectAll() {
+      document.querySelectorAll('#recipient-list .recipient-cb').forEach(function(cb) {
+        cb.checked = true;
+        cb.parentElement.classList.remove('omitted');
+      });
+      updateSelectedCount();
+    }
+
+    function deselectAll() {
+      document.querySelectorAll('#recipient-list .recipient-cb').forEach(function(cb) {
+        cb.checked = false;
+        cb.parentElement.classList.add('omitted');
+      });
+      updateSelectedCount();
+    }
+
+    // ---- Send to selected ----
+    function sendSelected() {
+      var checked = document.querySelectorAll('#recipient-list .recipient-cb:checked');
+      var rolls = [];
+      checked.forEach(function(cb) { rolls.push(cb.getAttribute('data-roll')); });
+
+      if (rolls.length === 0) {
+        showMsg('send-msg', 'No recipients selected.', 'info');
+        return;
+      }
+
+      var confirmed = confirm('Send ' + rolls.length + ' emails for "' + (typeLabels[currentType] || currentType) + '"?\n\nThis cannot be undone.');
+      if (!confirmed) return;
+
+      document.getElementById('send-spinner').style.display = 'block';
+      document.getElementById('btn-send').disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('send-spinner').style.display = 'none';
+          showMsg('send-msg', result, 'success');
+          // Refresh status
+          google.script.run.withSuccessHandler(updateStatus).getDashboardStatus();
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('send-spinner').style.display = 'none';
+          showMsg('send-msg', 'Error: ' + err.message, 'error');
+          document.getElementById('btn-send').disabled = false;
+        })
+        .dashboardSendCampaign(currentType, rolls);
+    }
+
+    function backToMain() {
+      document.getElementById('list-view').style.display = 'none';
+      document.getElementById('main-view').style.display = 'block';
+    }
+
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

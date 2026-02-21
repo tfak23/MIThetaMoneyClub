@@ -1,0 +1,329 @@
+// ===========================
+// Email Templates — generates HTML email content
+// ===========================
+
+/** Base URL for images hosted on GitHub Pages */
+var SITE_ASSETS = 'https://tfak23.github.io/MIThetaMoneyClub/assets/badges/';
+
+/**
+ * Format a dollar amount.
+ */
+function formatDollars(amount) {
+  return '$' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+/**
+ * Giving levels — matches js/giving-levels.js exactly.
+ * Returns { name, min, max, badge }
+ */
+var GIVING_LEVELS_DATA = [
+  { name: "The Chairman's Senate", min: 50000, max: Infinity, badge: 'chairmans-senate.jpg' },
+  { name: "The Passion Pact",      min: 25000, max: 49999,    badge: 'passion-pact.jpg' },
+  { name: "Founders Club",         min: 10000, max: 24999,    badge: 'founders-club.jpg' },
+  { name: "The 1971 Society",      min: 2500,  max: 9999,     badge: 'the-1971-society.jpg' },
+  { name: "Ducal Crown Club",      min: 1000,  max: 2499,     badge: 'ducal-crown-club.jpg' },
+  { name: "TIPO's Trust",          min: 500,   max: 999,      badge: 'tipos-trust.jpg' },
+  { name: "SigEp Sam Club",        min: 200,   max: 499,      badge: 'sigep-sam-club.jpg' },
+  { name: "Alpha/Beta Club",       min: 100,   max: 199,      badge: 'alpha-beta-club.jpg' },
+  { name: "Red Door Club",         min: 50,    max: 99,       badge: 'red-door-club.jpg' },
+  { name: "The Sigma Circle",      min: 1,     max: 49,       badge: 'sigma-circle.jpg' }
+];
+
+/**
+ * Get the giving level object for a donation total.
+ */
+function getGivingLevel(total) {
+  if (!total || total <= 0) return null;
+  for (var i = 0; i < GIVING_LEVELS_DATA.length; i++) {
+    if (total >= GIVING_LEVELS_DATA[i].min) return GIVING_LEVELS_DATA[i];
+  }
+  return null;
+}
+
+/**
+ * Get the next giving level object.
+ */
+function getNextGivingLevel(total) {
+  if (!total || total <= 0) return GIVING_LEVELS_DATA[GIVING_LEVELS_DATA.length - 1];
+  for (var i = GIVING_LEVELS_DATA.length - 1; i >= 0; i--) {
+    if (total < GIVING_LEVELS_DATA[i].min) return GIVING_LEVELS_DATA[i];
+  }
+  return null;
+}
+
+/**
+ * Get the giving level name for a donation total.
+ */
+function getGivingLevelName(total) {
+  var level = getGivingLevel(total);
+  return level ? level.name : '';
+}
+
+/**
+ * Get streak milestone label.
+ */
+function getStreakMilestone(streak) {
+  if (streak >= 120) return '10yr+';
+  if (streak >= 60) return '5yr+';
+  if (streak >= 36) return '3yr+';
+  if (streak >= 24) return '2yr+';
+  if (streak >= 12) return '1yr+';
+  if (streak >= 6) return '6mo+';
+  return '';
+}
+
+/**
+ * Get the unsubscribe URL. Must be updated after deploying the web app.
+ */
+function getUnsubscribeUrl(roll) {
+  var baseUrl = PropertiesService.getScriptProperties().getProperty('UNSUBSCRIBE_URL') || 'https://script.google.com/YOUR_DEPLOYED_URL';
+  return baseUrl + '?roll=' + encodeURIComponent(roll);
+}
+
+/**
+ * Common email footer HTML.
+ */
+function emailFooter(roll) {
+  return '<div style="margin-top:32px;padding-top:16px;border-top:1px solid #e0e0e0;text-align:center;font-size:12px;color:#999;">'
+    + '<p>MI Theta Chapter &middot; Sigma Phi Epsilon &middot; Lawrence Technological University</p>'
+    + '<p><a href="' + getUnsubscribeUrl(roll) + '" style="color:#999;">Unsubscribe</a></p>'
+    + '</div>';
+}
+
+/**
+ * Common email header/wrapper — includes banner.jpg at the top.
+ */
+function wrapEmail(bodyHtml, roll) {
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>'
+    + '<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">'
+    + '<div style="max-width:600px;margin:20px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">'
+    // Banner image
+    + '<div style="width:100%;"><img src="' + SITE_ASSETS + 'banner.jpg" alt="MI Theta Money Club" style="width:100%;display:block;border-radius:8px 8px 0 0;" /></div>'
+    // Header bar
+    + '<div style="background:linear-gradient(135deg,#9B1B30,#6A1B4D);padding:16px 32px;text-align:center;">'
+    + '<h1 style="margin:0;color:#fff;font-size:24px;">Money Club</h1>'
+    + '<p style="margin:4px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">MI Theta Chapter &middot; Sigma Phi Epsilon</p>'
+    + '</div>'
+    + '<div style="padding:32px;">'
+    + bodyHtml
+    + '</div>'
+    + emailFooter(roll)
+    + '</div></body></html>';
+}
+
+/**
+ * Donate button HTML.
+ */
+function donateButton(label, url, color) {
+  color = color || '#9B1B30';
+  return '<div style="text-align:center;margin:24px 0;">'
+    + '<a href="' + url + '" style="display:inline-block;background:' + color + ';color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;font-size:16px;">'
+    + label + '</a></div>';
+}
+
+/**
+ * Build a "Money Club profile card" — matches what the person sees when they search
+ * their name on the Money Club app. Includes badge image, level, total, progress bar.
+ */
+function profileCard(donor) {
+  var level = getGivingLevel(donor.totalDonations);
+  var nextLevel = getNextGivingLevel(donor.totalDonations);
+
+  // Badge image
+  var badgeHtml = '';
+  if (level) {
+    badgeHtml = '<div style="text-align:center;margin-bottom:12px;">'
+      + '<img src="' + SITE_ASSETS + level.badge + '" alt="' + level.name + '" style="width:100px;height:auto;" />'
+      + '</div>';
+  }
+
+  // Name and roll
+  var cardHtml = '<div style="text-align:center;padding:20px;margin:20px 0;background:#fafafa;border-radius:8px;border:1px solid #e0e0e0;">'
+    + badgeHtml
+    + '<h3 style="margin:0 0 4px;color:#d4a017;font-size:20px;">' + donor.fullName + '</h3>'
+    + '<p style="margin:0 0 12px;color:#999;font-size:13px;">Chapter Roll #' + donor.roll + '</p>'
+    + '<div style="width:60px;height:2px;background:linear-gradient(90deg,#9B1B30,#6A1B4D);margin:0 auto 12px;"></div>'
+    + '<p style="margin:0 0 4px;font-size:24px;font-weight:bold;color:#2d2d2d;">' + formatDollars(donor.totalDonations) + '</p>';
+
+  // Level name
+  if (level) {
+    cardHtml += '<p style="margin:0 0 12px;font-size:14px;font-weight:bold;color:#6A1B4D;">' + level.name + '</p>';
+  } else {
+    cardHtml += '<p style="margin:0 0 12px;font-size:14px;color:#999;">No donations recorded</p>';
+  }
+
+  // Progress bar toward next level
+  if (nextLevel && level && donor.totalDonations > 0) {
+    var remaining = nextLevel.min - donor.totalDonations;
+    var range = nextLevel.min - level.min;
+    var progress = ((donor.totalDonations - level.min) / range) * 100;
+    var pct = Math.min(Math.max(progress, 2), 100);
+
+    cardHtml += '<div style="margin:8px 0;">'
+      + '<div style="display:flex;justify-content:space-between;font-size:11px;color:#999;margin-bottom:4px;">'
+      + '<span>' + level.name + ' (' + formatDollars(level.min) + ')</span>'
+      + '<span><strong>' + nextLevel.name + ' (' + formatDollars(nextLevel.min) + ')</strong></span>'
+      + '</div>'
+      + '<div style="width:100%;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden;">'
+      + '<div style="width:' + pct.toFixed(1) + '%;height:100%;background:linear-gradient(90deg,#9B1B30,#6A1B4D);border-radius:4px;"></div>'
+      + '</div>'
+      + '<p style="text-align:center;margin:6px 0 0;font-size:12px;color:#999;">' + formatDollars(remaining) + ' away from <strong>' + nextLevel.name + '</strong></p>'
+      + '</div>';
+  } else if (!nextLevel && level) {
+    cardHtml += '<p style="text-align:center;margin:8px 0 0;font-size:12px;color:#6A1B4D;font-weight:bold;">Highest giving level achieved!</p>';
+  }
+
+  cardHtml += '</div>';
+  return cardHtml;
+}
+
+/**
+ * "Share Money Club" CTA block for current donors.
+ */
+function shareCtaHtml() {
+  return '<div style="text-align:center;margin:20px 0;padding:16px;background:#f0f4ff;border-radius:8px;border:1px solid #d0d8f0;">'
+    + '<p style="margin:0 0 8px;font-size:14px;color:#555;">Know a brother who should check out Money Club?</p>'
+    + '<a href="' + EMAIL_CONFIG.SITE_URL + '" style="display:inline-block;background:#6A1B4D;color:#fff;text-decoration:none;padding:10px 24px;border-radius:8px;font-weight:bold;font-size:14px;">Share Money Club</a>'
+    + '<p style="margin:8px 0 0;font-size:12px;color:#999;">Send them the link so they can look up their giving level!</p>'
+    + '</div>';
+}
+
+// ===========================
+// Template Functions
+// ===========================
+
+/**
+ * New donor thank-you email.
+ * If the donor is already a monthly donor, skips the "set up monthly" CTA.
+ */
+function newDonorThankYou(donor) {
+  var body = '<h2 style="color:#2d2d2d;margin-top:0;">Thank You, ' + donor.firstName + '!</h2>'
+    + '<p style="font-size:16px;color:#555;line-height:1.6;">Your generous donation of <strong>' + formatDollars(donor.currentYearAmt) + '</strong> to MI Theta means the world to our chapter. Every dollar directly supports our brothers through scholarships and leadership development.</p>';
+
+  // Profile card (same as what they see on the app)
+  body += profileCard(donor);
+
+  // Share CTA for current donors
+  body += shareCtaHtml();
+
+  // Only show "set up monthly" CTA if they're NOT already a monthly donor
+  if (!donor.isMonthlyDonor) {
+    body += '<p style="font-size:16px;color:#555;line-height:1.6;">Want to make an even bigger impact? Consider setting up a monthly donation:</p>'
+      + '<div style="text-align:center;margin:16px 0;">'
+      + '<a href="' + EMAIL_CONFIG.DONATE_BMS + '" style="display:inline-block;background:#9B1B30;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Support BMS Fund</a> '
+      + '<a href="' + EMAIL_CONFIG.DONATE_LEADERSHIP + '" style="display:inline-block;background:#6A1B4D;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Support Leadership Fund</a>'
+      + '</div>';
+  }
+
+  body += '<p style="font-size:14px;color:#999;text-align:center;margin-top:24px;">Virtue, Diligence, Brotherly Love</p>';
+
+  return {
+    subject: 'Thank You for Your Donation, ' + donor.firstName + '!',
+    html: wrapEmail(body, donor.roll)
+  };
+}
+
+/**
+ * Quarterly thank-you for monthly donors.
+ */
+function quarterlyThankYouTemplate(donor) {
+  var milestone = getStreakMilestone(donor.streak);
+  var milestoneHtml = milestone
+    ? '<div style="text-align:center;margin:16px 0;"><span style="background:#fff3e0;color:#e65100;padding:6px 16px;border-radius:16px;font-weight:bold;font-size:14px;">Milestone: ' + milestone + '</span></div>'
+    : '';
+
+  var fundText = donor.fund === 'Both' ? 'BMS & Leadership Funds'
+    : donor.fund === 'BMS' ? 'Balanced Man Scholarship Fund'
+    : 'Leadership Fund';
+
+  var body = '<h2 style="color:#2d2d2d;margin-top:0;">Keep It Going, ' + donor.firstName + '!</h2>'
+    + '<p style="font-size:16px;color:#555;line-height:1.6;">You\'ve been a monthly donor for <strong>' + donor.streak + ' consecutive months</strong> to the <strong>' + fundText + '</strong>. That kind of consistency makes a real difference.</p>'
+    + milestoneHtml;
+
+  // Profile card
+  body += profileCard(donor);
+
+  // Share CTA
+  body += shareCtaHtml();
+
+  body += '<p style="font-size:16px;color:#555;line-height:1.6;">Check out the Monthly Donors leaderboard to see where you rank:</p>'
+    + donateButton('View Leaderboard', EMAIL_CONFIG.SITE_URL, '#6A1B4D')
+    + '<p style="font-size:14px;color:#999;text-align:center;margin-top:24px;">Virtue, Diligence, Brotherly Love</p>';
+
+  return {
+    subject: donor.firstName + ', Your ' + donor.streak + '-Month Streak is Going Strong!',
+    html: wrapEmail(body, donor.roll)
+  };
+}
+
+/**
+ * Lapsed monthly donor re-engagement email.
+ */
+function lapsedReengagement(donor) {
+  var body = '<h2 style="color:#2d2d2d;margin-top:0;">We Miss You, ' + donor.firstName + '!</h2>'
+    + '<p style="font-size:16px;color:#555;line-height:1.6;">Your monthly donation streak recently ended. We know life gets busy, but your consistent support was making a real impact for MI Theta.</p>'
+    + (donor.prevStreak > 0
+      ? '<div style="text-align:center;margin:20px 0;padding:16px;background:#fff3e0;border-radius:8px;"><p style="margin:0;font-size:18px;color:#e65100;font-weight:bold;">Your streak was ' + donor.prevStreak + ' months</p></div>'
+      : '');
+
+  // Profile card
+  body += profileCard(donor);
+
+  body += '<p style="font-size:16px;color:#555;line-height:1.6;">It only takes a minute to get back on track. Pick up where you left off:</p>'
+    + '<div style="text-align:center;margin:16px 0;">'
+    + '<a href="' + EMAIL_CONFIG.DONATE_BMS + '" style="display:inline-block;background:#9B1B30;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Resume BMS Donation</a> '
+    + '<a href="' + EMAIL_CONFIG.DONATE_LEADERSHIP + '" style="display:inline-block;background:#6A1B4D;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Resume Leadership Donation</a>'
+    + '</div>'
+    + '<p style="font-size:14px;color:#999;text-align:center;margin-top:24px;">Virtue, Diligence, Brotherly Love</p>';
+
+  return {
+    subject: donor.firstName + ', Your Monthly Streak Needs You!',
+    html: wrapEmail(body, donor.roll)
+  };
+}
+
+/**
+ * Annual re-engagement email for past donors (gave before, not this year).
+ */
+function annualPastDonor(donor) {
+  var body = '<h2 style="color:#2d2d2d;margin-top:0;">Hey ' + donor.firstName + ', We Could Use Your Help Again</h2>'
+    + '<p style="font-size:16px;color:#555;line-height:1.6;">Over the years, you\'ve made a difference for MI Theta. That generosity has directly funded scholarships and leadership development for our undergraduates.</p>';
+
+  // Profile card
+  body += profileCard(donor);
+
+  body += '<p style="font-size:16px;color:#555;line-height:1.6;">This year, we\'re working toward fully funding our scholarship endowments. A gift of any size helps us get there:</p>'
+    + '<div style="text-align:center;margin:16px 0;">'
+    + '<a href="' + EMAIL_CONFIG.DONATE_BMS + '" style="display:inline-block;background:#9B1B30;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Support BMS Fund</a> '
+    + '<a href="' + EMAIL_CONFIG.DONATE_LEADERSHIP + '" style="display:inline-block;background:#6A1B4D;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Support Leadership Fund</a>'
+    + '</div>'
+    + '<p style="font-size:16px;color:#555;line-height:1.6;">See how close we are and check your giving history:</p>'
+    + donateButton('View Money Club', EMAIL_CONFIG.SITE_URL, '#6A1B4D')
+    + '<p style="font-size:14px;color:#999;text-align:center;margin-top:24px;">Virtue, Diligence, Brotherly Love</p>';
+
+  return {
+    subject: donor.firstName + ', MI Theta Could Use Your Support This Year',
+    html: wrapEmail(body, donor.roll)
+  };
+}
+
+/**
+ * Annual email for non-donors (never donated).
+ */
+function annualNonDonor(donor) {
+  var body = '<h2 style="color:#2d2d2d;margin-top:0;">Hey ' + donor.firstName + ', Your Brothers Need You</h2>'
+    + '<p style="font-size:16px;color:#555;line-height:1.6;">MI Theta has been building something special — scholarships that change lives and leadership programs that shape the next generation of SigEp brothers at Lawrence Tech.</p>'
+    + '<p style="font-size:16px;color:#555;line-height:1.6;">Right now, dozens of MI Theta alumni are giving back through the Money Club. A first-time gift of even <strong>$25</strong> makes a difference and adds your name to the board:</p>'
+    + '<div style="text-align:center;margin:16px 0;">'
+    + '<a href="' + EMAIL_CONFIG.DONATE_BMS + '" style="display:inline-block;background:#9B1B30;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Support BMS Fund</a> '
+    + '<a href="' + EMAIL_CONFIG.DONATE_LEADERSHIP + '" style="display:inline-block;background:#6A1B4D;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Support Leadership Fund</a>'
+    + '</div>'
+    + '<p style="font-size:16px;color:#555;line-height:1.6;">See what your brothers have accomplished and how our funds are growing:</p>'
+    + donateButton('View Money Club', EMAIL_CONFIG.SITE_URL, '#6A1B4D')
+    + '<p style="font-size:14px;color:#999;text-align:center;margin-top:24px;">Virtue, Diligence, Brotherly Love</p>';
+
+  return {
+    subject: donor.firstName + ', Join Your Brothers in Supporting MI Theta',
+    html: wrapEmail(body, donor.roll)
+  };
+}
