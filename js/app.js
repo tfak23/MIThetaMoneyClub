@@ -595,6 +595,7 @@ function showMonthlyDonors() {
     hide(document.getElementById('level-members'));
 
     function getStreakTier(streak) {
+        if (streak >= 120) return { cls: 'mythic', label: '10yr+' };
         if (streak >= 60) return { cls: 'legendary', label: '5yr+' };
         if (streak >= 36) return { cls: 'epic', label: '3yr+' };
         if (streak >= 24) return { cls: 'gold', label: '2yr+' };
@@ -620,7 +621,7 @@ function showMonthlyDonors() {
                 <span class="monthly-rank">${i + 1}</span>
                 <span class="monthly-name">${escapeHtml(d.name)}</span>
                 <span class="monthly-badges">${fundBadges(d.fund)}</span>
-                <span class="monthly-streak">&#9760;&#65039; ${d.streak}${milestoneHtml}</span>
+                <span class="monthly-streak">${d.streak} mo${milestoneHtml}</span>
             </div>`;
     }).join('');
 
@@ -636,6 +637,17 @@ function showMonthlyDonors() {
             <div class="accent-divider"></div>
             <div class="monthly-donors-list">
                 ${rows}
+            </div>
+            <div class="monthly-tiers-legend">
+                <h3 class="monthly-tiers-heading">Streak Milestones</h3>
+                <div class="monthly-tiers-list">
+                    <span class="monthly-tier-badge monthly-tier-bronze">6mo+</span>
+                    <span class="monthly-tier-badge monthly-tier-silver">1yr+</span>
+                    <span class="monthly-tier-badge monthly-tier-gold">2yr+</span>
+                    <span class="monthly-tier-badge monthly-tier-epic">3yr+</span>
+                    <span class="monthly-tier-badge monthly-tier-legendary">5yr+</span>
+                    <span class="monthly-tier-badge monthly-tier-mythic">10yr+</span>
+                </div>
             </div>
         </div>
     `;

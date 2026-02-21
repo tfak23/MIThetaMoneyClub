@@ -1597,12 +1597,52 @@ main {
 .monthly-tier-gold { border-left-color: #d4a017; }
 .monthly-tier-epic { border-left-color: #7b1fa2; }
 .monthly-tier-legendary { border-left-color: var(--sigep-red); }
+.monthly-tier-mythic { border-left-color: #1a1a2e; }
 
 .monthly-tier-bronze .monthly-milestone { background: #fce4c1; color: #8b5e14; }
 .monthly-tier-silver .monthly-milestone { background: #e8e8e8; color: #555; }
 .monthly-tier-gold .monthly-milestone { background: #fff8e1; color: #b8860b; }
 .monthly-tier-epic .monthly-milestone { background: #f3e5f5; color: #7b1fa2; }
 .monthly-tier-legendary .monthly-milestone { background: #fde8e8; color: var(--sigep-red); }
+.monthly-tier-mythic .monthly-milestone { background: #1a1a2e; color: #ffd700; }
+
+.monthly-tiers-legend {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.monthly-tiers-heading {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--sigep-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.monthly-tiers-list {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.monthly-tier-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border-left: 4px solid;
+}
+
+.monthly-tier-badge.monthly-tier-bronze { border-left-color: #cd7f32; background: #fce4c1; color: #8b5e14; }
+.monthly-tier-badge.monthly-tier-silver { border-left-color: #a0a0a0; background: #e8e8e8; color: #555; }
+.monthly-tier-badge.monthly-tier-gold { border-left-color: #d4a017; background: #fff8e1; color: #b8860b; }
+.monthly-tier-badge.monthly-tier-epic { border-left-color: #7b1fa2; background: #f3e5f5; color: #7b1fa2; }
+.monthly-tier-badge.monthly-tier-legendary { border-left-color: var(--sigep-red); background: #fde8e8; color: var(--sigep-red); }
+.monthly-tier-badge.monthly-tier-mythic { border-left-color: #1a1a2e; background: #1a1a2e; color: #ffd700; }
 
 /* ===========================
    Legend
