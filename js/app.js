@@ -618,14 +618,10 @@ function showMonthlyDonors() {
         const milestoneHtml = tier.label ? `<span class="monthly-milestone">${tier.label}</span>` : '';
         return `
             <div class="monthly-donor-item${tierClass}">
-                <div class="monthly-row-top">
-                    <span class="monthly-rank">${i + 1}</span>
-                    <span class="monthly-name">${escapeHtml(d.name)}</span>
-                </div>
-                <div class="monthly-row-bottom">
-                    <span class="monthly-badges">${fundBadges(d.fund)}</span>
-                    <span class="monthly-streak">${d.streak} mo${milestoneHtml}</span>
-                </div>
+                <span class="monthly-rank">${i + 1}</span>
+                <span class="monthly-name">${escapeHtml(d.name)}</span>
+                <span class="monthly-badges">${fundBadges(d.fund)}</span>
+                <span class="monthly-streak">${d.streak} mo${milestoneHtml}</span>
             </div>`;
     }).join('');
 
