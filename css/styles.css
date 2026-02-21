@@ -1647,6 +1647,14 @@ main {
     flex-wrap: wrap;
 }
 
+@media (max-width: 600px) {
+    .monthly-tiers-list {
+        display: grid;
+        grid-template-columns: repeat(3, auto);
+        justify-content: center;
+    }
+}
+
 .monthly-tier-badge {
     font-size: 0.7rem;
     font-weight: 700;
