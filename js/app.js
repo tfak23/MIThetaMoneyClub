@@ -566,7 +566,7 @@ function renderMonthlyDonorsCard() {
 
     container.innerHTML = `
         <div class="monthly-donors-card-btn">
-            <div class="monthly-donors-icon">&#128293;</div>
+            <div class="monthly-donors-icon">&#9760;&#65039;</div>
             <h3 class="monthly-donors-btn-label">Monthly Donors</h3>
         </div>
     `;
@@ -604,8 +604,8 @@ function showMonthlyDonors() {
     }
 
     function fundBadges(fund) {
-        const bms = '<img src="assets/badges/balanced-man.jpg" alt="BMS" class="monthly-fund-badge" />';
-        const lead = '<img src="assets/badges/leadership.jpg" alt="Leadership" class="monthly-fund-badge" />';
+        const bms = '<span class="monthly-fund-pill monthly-fund-bms">BMS</span>';
+        const lead = '<span class="monthly-fund-pill monthly-fund-ldr">LDR</span>';
         if (fund === 'Both') return bms + lead;
         if (fund === 'BMS') return bms;
         return lead;
@@ -620,14 +620,14 @@ function showMonthlyDonors() {
                 <span class="monthly-rank">${i + 1}</span>
                 <span class="monthly-name">${escapeHtml(d.name)}</span>
                 <span class="monthly-badges">${fundBadges(d.fund)}</span>
-                <span class="monthly-streak">&#128293; ${d.streak}${milestoneHtml}</span>
+                <span class="monthly-streak">&#9760;&#65039; ${d.streak}${milestoneHtml}</span>
             </div>`;
     }).join('');
 
     container.innerHTML = `
         <div class="card level-members-card">
             <div class="level-members-header">
-                <div class="monthly-donors-icon-large">&#128293;</div>
+                <div class="monthly-donors-icon-large">&#9760;&#65039;</div>
                 <div>
                     <h2 class="level-members-title">Monthly Donors</h2>
                     <p class="level-members-count">${monthlyDonorsData.length} active streak${monthlyDonorsData.length !== 1 ? 's' : ''}</p>
