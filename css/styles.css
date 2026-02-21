@@ -1529,7 +1529,7 @@ main {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     min-width: 55px;
-    text-align: right;
+    text-align: center;
 }
 
 .monthly-donor-item {
@@ -1613,7 +1613,7 @@ main {
     color: var(--sigep-red);
     white-space: nowrap;
     min-width: 55px;
-    text-align: right;
+    text-align: center;
 }
 
 .monthly-milestone {
