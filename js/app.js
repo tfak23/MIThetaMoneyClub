@@ -49,6 +49,8 @@ let scholarshipData = null;
 let openScholarshipKey = null;
 let decadeOpen = false;
 let decadeData = null;
+let monthlyDonorsOpen = false;
+let monthlyDonorsData = null;
 
 async function init() {
     const searchInput = document.getElementById('search-input');
@@ -64,19 +66,22 @@ async function init() {
     searchInput.disabled = true;
 
     try {
-        const [memberResult, fundData, decData] = await Promise.all([
+        const [memberResult, fundData, decData, monthlyData] = await Promise.all([
             getMemberData(),
             fetchFundProgress().catch(() => null),
-            fetchDecadeData().catch(() => null)
+            fetchDecadeData().catch(() => null),
+            fetchMonthlyDonors().catch(() => null)
         ]);
 
         const { members, stale, cacheDate } = memberResult;
         allMembers = members;
         decadeData = decData;
+        monthlyDonorsData = monthlyData;
         initializeSearch(members);
         renderLevelsGrid();
         renderTopDonorsCard();
         renderDecadeCard();
+        renderMonthlyDonorsCard();
         searchInput.disabled = false;
         searchInput.focus();
 
@@ -350,6 +355,10 @@ function renderLevelMembers(level) {
     decadeOpen = false;
     hide(document.getElementById('decade-leaderboard'));
 
+    // Close monthly donors if open
+    monthlyDonorsOpen = false;
+    hide(document.getElementById('monthly-donors-leaderboard'));
+
     const membersInLevel = allMembers.filter(m => {
         const memberLevel = getGivingLevel(m.totalDonations);
         return memberLevel && memberLevel.name === level.name;
@@ -420,6 +429,10 @@ function showTopDonorsList() {
     decadeOpen = false;
     hide(document.getElementById('decade-leaderboard'));
 
+    // Close monthly donors if open
+    monthlyDonorsOpen = false;
+    hide(document.getElementById('monthly-donors-leaderboard'));
+
     const topMembers = [...allMembers]
         .filter(m => m.totalDonations > 0)
         .sort((a, b) => b.totalDonations - a.totalDonations)
@@ -485,8 +498,10 @@ function showDecadeLeaderboard() {
     // Close other panels
     topDonorsOpen = false;
     openLevelName = null;
+    monthlyDonorsOpen = false;
     hide(document.getElementById('top-donors'));
     hide(document.getElementById('level-members'));
+    hide(document.getElementById('monthly-donors-leaderboard'));
 
     // Sort decades by total descending, exclude Friends of SigEp
     const sorted = [...decadeData]
@@ -538,6 +553,90 @@ function showDecadeLeaderboard() {
                 }).join('')}
             </div>
             <p class="decade-chart-subtext">Organized by join date</p>
+        </div>
+    `;
+
+    show(container);
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderMonthlyDonorsCard() {
+    const container = document.getElementById('monthly-donors-btn');
+    if (!container || !monthlyDonorsData || monthlyDonorsData.length === 0) return;
+
+    container.innerHTML = `
+        <div class="monthly-donors-card-btn">
+            <div class="monthly-donors-icon">&#128293;</div>
+            <h3 class="monthly-donors-btn-label">Monthly Donors</h3>
+        </div>
+    `;
+    container.addEventListener('click', () => showMonthlyDonors());
+    show(container);
+}
+
+function showMonthlyDonors() {
+    const container = document.getElementById('monthly-donors-leaderboard');
+    if (!container || !monthlyDonorsData) return;
+
+    // Toggle: clicking again closes it
+    if (monthlyDonorsOpen && !container.classList.contains('hidden')) {
+        hide(container);
+        monthlyDonorsOpen = false;
+        return;
+    }
+    monthlyDonorsOpen = true;
+
+    // Close other panels
+    topDonorsOpen = false;
+    decadeOpen = false;
+    openLevelName = null;
+    hide(document.getElementById('top-donors'));
+    hide(document.getElementById('decade-leaderboard'));
+    hide(document.getElementById('level-members'));
+
+    function getStreakTier(streak) {
+        if (streak >= 60) return { cls: 'legendary', label: '5yr+' };
+        if (streak >= 36) return { cls: 'epic', label: '3yr+' };
+        if (streak >= 24) return { cls: 'gold', label: '2yr+' };
+        if (streak >= 12) return { cls: 'silver', label: '1yr+' };
+        if (streak >= 6) return { cls: 'bronze', label: '6mo+' };
+        return { cls: '', label: '' };
+    }
+
+    function fundBadges(fund) {
+        const bms = '<img src="assets/badges/balanced-man.jpg" alt="BMS" class="monthly-fund-badge" />';
+        const lead = '<img src="assets/badges/leadership.jpg" alt="Leadership" class="monthly-fund-badge" />';
+        if (fund === 'Both') return bms + lead;
+        if (fund === 'BMS') return bms;
+        return lead;
+    }
+
+    const rows = monthlyDonorsData.map((d, i) => {
+        const tier = getStreakTier(d.streak);
+        const tierClass = tier.cls ? ` monthly-tier-${tier.cls}` : '';
+        const milestoneHtml = tier.label ? `<span class="monthly-milestone">${tier.label}</span>` : '';
+        return `
+            <div class="monthly-donor-item${tierClass}">
+                <span class="monthly-rank">${i + 1}</span>
+                <span class="monthly-name">${escapeHtml(d.name)}</span>
+                <span class="monthly-badges">${fundBadges(d.fund)}</span>
+                <span class="monthly-streak">&#128293; ${d.streak}${milestoneHtml}</span>
+            </div>`;
+    }).join('');
+
+    container.innerHTML = `
+        <div class="card level-members-card">
+            <div class="level-members-header">
+                <div class="monthly-donors-icon-large">&#128293;</div>
+                <div>
+                    <h2 class="level-members-title">Monthly Donors</h2>
+                    <p class="level-members-count">${monthlyDonorsData.length} active streak${monthlyDonorsData.length !== 1 ? 's' : ''}</p>
+                </div>
+            </div>
+            <div class="accent-divider"></div>
+            <div class="monthly-donors-list">
+                ${rows}
+            </div>
         </div>
     `;
 

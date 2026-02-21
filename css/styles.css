@@ -1460,6 +1460,139 @@ main {
 }
 
 /* ===========================
+   Monthly Donors
+   =========================== */
+
+.monthly-donors-btn-section {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+.monthly-donors-card-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #fde8e8, #f5c6c6);
+    border: 2px solid var(--sigep-red);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 16px 32px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.monthly-donors-card-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+}
+
+.monthly-donors-btn-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--sigep-dark);
+}
+
+.monthly-donors-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.monthly-donors-icon-large {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.monthly-donors-section {
+    max-width: 700px;
+    margin: 0 auto 32px;
+    padding: 0 20px;
+}
+
+.monthly-donors-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.monthly-donor-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    border-left: 4px solid transparent;
+}
+
+.monthly-donor-item:last-child {
+    border-bottom: none;
+}
+
+.monthly-rank {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--sigep-text-light);
+    min-width: 28px;
+    text-align: center;
+}
+
+.monthly-name {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--sigep-dark);
+}
+
+.monthly-badges {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.monthly-fund-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border);
+}
+
+.monthly-streak {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--sigep-red);
+    white-space: nowrap;
+    min-width: 55px;
+    text-align: right;
+}
+
+.monthly-milestone {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: #fde8e8;
+    color: var(--sigep-red);
+    border-radius: 8px;
+    padding: 1px 6px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+/* Streak tier left borders */
+.monthly-tier-bronze { border-left-color: #cd7f32; }
+.monthly-tier-silver { border-left-color: #a0a0a0; }
+.monthly-tier-gold { border-left-color: #d4a017; }
+.monthly-tier-epic { border-left-color: #7b1fa2; }
+.monthly-tier-legendary { border-left-color: var(--sigep-red); }
+
+.monthly-tier-bronze .monthly-milestone { background: #fce4c1; color: #8b5e14; }
+.monthly-tier-silver .monthly-milestone { background: #e8e8e8; color: #555; }
+.monthly-tier-gold .monthly-milestone { background: #fff8e1; color: #b8860b; }
+.monthly-tier-epic .monthly-milestone { background: #f3e5f5; color: #7b1fa2; }
+.monthly-tier-legendary .monthly-milestone { background: #fde8e8; color: var(--sigep-red); }
+
+/* ===========================
    Legend
    =========================== */
 

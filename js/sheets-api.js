@@ -270,6 +270,74 @@ async function fetchScholarshipData() {
 // Decade Data
 // ===========================
 
+async function fetchMonthlyDonors() {
+    const { SPREADSHEET_ID, MONTHLY_DONORS } = CONFIG;
+
+    const ranges = [
+        `'${MONTHLY_DONORS.BMS.SHEET_NAME}'!${MONTHLY_DONORS.BMS.NAMES_FIRST}`,
+        `'${MONTHLY_DONORS.BMS.SHEET_NAME}'!${MONTHLY_DONORS.BMS.NAMES_LAST}`,
+        `'${MONTHLY_DONORS.BMS.SHEET_NAME}'!${MONTHLY_DONORS.BMS.STREAKS}`,
+        `'${MONTHLY_DONORS.LEADERSHIP.SHEET_NAME}'!${MONTHLY_DONORS.LEADERSHIP.NAMES_FIRST}`,
+        `'${MONTHLY_DONORS.LEADERSHIP.SHEET_NAME}'!${MONTHLY_DONORS.LEADERSHIP.NAMES_LAST}`,
+        `'${MONTHLY_DONORS.LEADERSHIP.SHEET_NAME}'!${MONTHLY_DONORS.LEADERSHIP.STREAKS}`
+    ];
+
+    const url = sheetsBatchUrl(SPREADSHEET_ID, ranges);
+    const response = await fetch(url);
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    const vr = data.valueRanges || [];
+
+    function parseDonors(firstNames, lastNames, streaks) {
+        const fNames = firstNames?.values || [];
+        const lNames = lastNames?.values || [];
+        const stks = streaks?.values || [];
+        const donors = [];
+        const maxLen = Math.max(fNames.length, lNames.length, stks.length);
+
+        for (let i = 0; i < maxLen; i++) {
+            let first = String(fNames[i]?.[0] || '').trim().replace(/\*+$/, '');
+            let last = String(lNames[i]?.[0] || '').trim().replace(/\*+$/, '');
+            const streak = parseInt(String(stks[i]?.[0] || '0').replace(/[^0-9]/g, ''), 10) || 0;
+            if (first && last && streak > 1) {
+                donors.push({ name: `${first} ${last}`, streak });
+            }
+        }
+        return donors;
+    }
+
+    const bmsDonors = parseDonors(vr[0], vr[1], vr[2]);
+    const leadershipDonors = parseDonors(vr[3], vr[4], vr[5]);
+
+    // Merge by name — donors in both get "Both" and the higher streak
+    const merged = new Map();
+
+    bmsDonors.forEach(d => {
+        merged.set(d.name, { name: d.name, streak: d.streak, fund: 'BMS' });
+    });
+
+    leadershipDonors.forEach(d => {
+        if (merged.has(d.name)) {
+            const existing = merged.get(d.name);
+            existing.fund = 'Both';
+            existing.streak = Math.max(existing.streak, d.streak);
+        } else {
+            merged.set(d.name, { name: d.name, streak: d.streak, fund: 'Leadership' });
+        }
+    });
+
+    const donors = [...merged.values()];
+    donors.sort((a, b) => b.streak - a.streak);
+
+    return donors;
+}
+
+// ===========================
+// Decade Data
+// ===========================
+
 async function fetchDecadeData() {
     const { SPREADSHEET_ID, SUMMARY } = CONFIG;
 

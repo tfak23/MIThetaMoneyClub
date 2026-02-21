@@ -15,7 +15,7 @@ const CONFIG = {
     YEAR_DONOR_BASE_COL: 101, // CW = column 101
     YEAR_DONOR_COL_STEP: 6,
     CACHE_TTL_DAYS: 7,
-    CACHE_VERSION: 11, // Increment to force cache refresh when data structure changes
+    CACHE_VERSION: 12, // Increment to force cache refresh when data structure changes
     SUMMARY: {
         SHEET_NAME: 'Summary',
         AS_OF_DATE: 'J2',
@@ -26,6 +26,10 @@ const CONFIG = {
         DECADE_LABELS: 'A3:A9',
         DECADE_TOTALS: 'B3:B9',
         DECADE_DONORS: 'E3:E9'
+    },
+    MONTHLY_DONORS: {
+        BMS: { SHEET_NAME: 'BMS Tracker', NAMES_FIRST: 'C4:C50', NAMES_LAST: 'D4:D50', STREAKS: 'E4:E50' },
+        LEADERSHIP: { SHEET_NAME: 'Leadership Tracker', NAMES_FIRST: 'C4:C50', NAMES_LAST: 'D4:D50', STREAKS: 'E4:E50' }
     },
     SCHOLARSHIPS: {
         SPREADSHEET_ID: '1VxjgaGdfaXiYrRh21u2SaKgHMkrrgaehFLUH_ZEqGxE',
