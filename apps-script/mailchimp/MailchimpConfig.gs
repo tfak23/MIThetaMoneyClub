@@ -15,7 +15,8 @@ const MC_CONFIG = {
   MC_EMAIL_COL: 13,       // M — Mailchimp email (for mismatch flagging)
   SYNC_STATUS_COL: 14,    // N — Sync status (Match / Mismatch / Not in Mailchimp)
   TRACKING_START_COL: 25, // Y — First campaign tracking column
-  LABEL_ROW: 14,          // Row where campaign subject labels go
+  LABEL_ROW: 1,           // Row where campaign subject labels go
+  DATA_START_ROW: 2,      // Row where member data begins
   PROTECTED_START_COL: 68, // BP — Don't overwrite columns from here onward
 
   // Filters

@@ -269,28 +269,35 @@ function trackCampaigns(selections) {
 
   if (!statsSheet) throw new Error('Email Stats tab not found');
 
-  // Build roll → email lookup from the sheet
   var lastRow = statsSheet.getLastRow();
-  if (lastRow < 2) throw new Error('No data in Email Stats');
+  var dataStartRow = MC_CONFIG.DATA_START_ROW;
+  if (lastRow < dataStartRow) throw new Error('No data in Email Stats');
 
-  var rollData = statsSheet.getRange(2, MC_CONFIG.ROLL_COL, lastRow - 1, 1).getValues();
-  var emailData = statsSheet.getRange(2, MC_CONFIG.EMAIL_COL, lastRow - 1, 1).getValues();
-
-  var rowByEmail = {}; // email → { row, roll }
-  for (var i = 0; i < rollData.length; i++) {
-    var email = String(emailData[i][0] || '').trim().toLowerCase();
-    var roll = String(rollData[i][0] || '').trim();
-    if (email && roll) {
-      rowByEmail[email] = { row: i + 2, roll: roll };
-    }
-  }
-
-  // Find the next available tracking column (before the protected range)
-  var lastCol = statsSheet.getLastColumn();
-  var nextCol = Math.max(MC_CONFIG.TRACKING_START_COL, lastCol + 1);
+  // Read member data (starts at DATA_START_ROW, not row 2)
+  var numDataRows = lastRow - dataStartRow + 1;
+  var rollData = statsSheet.getRange(dataStartRow, MC_CONFIG.ROLL_COL, numDataRows, 1).getValues();
+  var emailData = statsSheet.getRange(dataStartRow, MC_CONFIG.EMAIL_COL, numDataRows, 1).getValues();
 
   // Track where protected columns start (shifts as we insert)
   var protectedCol = MC_CONFIG.PROTECTED_START_COL;
+
+  // Get next tracking column from saved position, or fall back to scanning
+  var props = PropertiesService.getScriptProperties();
+  var savedNextCol = props.getProperty('NEXT_TRACKING_COL');
+  var nextCol;
+  if (savedNextCol) {
+    nextCol = parseInt(savedNextCol, 10);
+  } else {
+    // First time: scan label row to find where to start
+    nextCol = MC_CONFIG.TRACKING_START_COL;
+    for (var col = MC_CONFIG.TRACKING_START_COL; col < protectedCol; col++) {
+      if (!statsSheet.getRange(MC_CONFIG.LABEL_ROW, col).getValue()) {
+        nextCol = col;
+        break;
+      }
+      nextCol = col + 1;
+    }
+  }
 
   // Find next available column in Open and Didn't Open tabs
   var openNextCol = openSheet ? Math.max(1, openSheet.getLastColumn() + 1) : 1;
@@ -304,10 +311,17 @@ function trackCampaigns(selections) {
     var campaignIds = sel.campaignIds;
     var subject = sel.subject;
 
-    // If nextCol would hit the protected range, insert a column to push it right
-    if (nextCol >= protectedCol) {
-      statsSheet.insertColumnBefore(protectedCol);
-      protectedCol++; // protected data shifted right by 1
+    // ALWAYS insert a new column so existing data is never overwritten.
+    // Insert at nextCol — everything from nextCol onward shifts right.
+    statsSheet.insertColumnBefore(nextCol);
+    protectedCol++; // protected range shifted right too
+
+    // Copy the entire previous column (formulas + values + formatting) into the new blank column
+    var prevCol = nextCol - 1;
+    if (prevCol >= MC_CONFIG.TRACKING_START_COL) {
+      var srcRange = statsSheet.getRange(1, prevCol, lastRow, 1);
+      var destRange = statsSheet.getRange(1, nextCol, lastRow, 1);
+      srcRange.copyTo(destRange);
     }
 
     // Collect all emails that were sent to (union across resends)
@@ -317,29 +331,25 @@ function trackCampaigns(selections) {
     for (var c = 0; c < campaignIds.length; c++) {
       var cid = campaignIds[c];
 
-      // Who was sent this campaign
       var sentList = mcGetCampaignSentTo(cid);
       for (var j = 0; j < sentList.length; j++) {
         sentToEmails[sentList[j]] = true;
       }
 
-      // Who opened this campaign
       var openList = mcGetCampaignOpens(cid);
       for (var k = 0; k < openList.length; k++) {
         openedEmails[openList[k]] = true;
       }
     }
 
-    // Format the label: "Feb 20, 26 - Subject"
-    var label = subject;
+    // Format the label: "Feb 20, 26 - First Two"
+    var shortSubject = subject.split(/\s+/).slice(0, 2).join(' ');
+    var label = shortSubject;
     if (sel.latestSendDate) {
       var d = new Date(sel.latestSendDate);
       var dateStr = months[d.getMonth()] + ' ' + d.getDate() + ', ' + String(d.getFullYear()).slice(-2);
-      label = dateStr + ' - ' + subject;
+      label = dateStr + ' - ' + shortSubject;
     }
-
-    // Write campaign label in row 14 (LABEL_ROW)
-    statsSheet.getRange(MC_CONFIG.LABEL_ROW, nextCol).setValue(label);
 
     // Prepare column data + Open/Didn't Open lists
     var colValues = [];
@@ -361,10 +371,13 @@ function trackCampaigns(selections) {
       }
     }
 
-    // Write to Email Stats (data starts at row 2)
+    // Write tracking data to Email Stats (only the member data rows)
     if (colValues.length > 0) {
-      statsSheet.getRange(2, nextCol, colValues.length, 1).setValues(colValues);
+      statsSheet.getRange(dataStartRow, nextCol, colValues.length, 1).setValues(colValues);
     }
+
+    // Write campaign label in row 1
+    statsSheet.getRange(MC_CONFIG.LABEL_ROW, nextCol).setValue(label);
 
     // Write to Open tab
     if (openSheet && openRolls.length > 0) {
@@ -385,6 +398,9 @@ function trackCampaigns(selections) {
     nextCol++;
     tracked++;
   }
+
+  // Save next available column for the next import
+  props.setProperty('NEXT_TRACKING_COL', String(nextCol));
 
   return 'Tracked ' + tracked + ' campaign(s). New columns added to Email Stats, Open, and Didn\'t Open tabs.';
 }

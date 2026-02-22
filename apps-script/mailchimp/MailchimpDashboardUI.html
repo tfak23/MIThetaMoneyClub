@@ -337,7 +337,7 @@
       checked.forEach(function(cb) {
         var idx = parseInt(cb.getAttribute('data-index'));
         var c = currentCampaigns[idx];
-        selections.push({ subject: c.subject, campaignIds: c.campaignIds });
+        selections.push({ subject: c.subject, campaignIds: c.campaignIds, latestSendDate: c.latestSendDate });
       });
 
       if (!confirm('Track ' + selections.length + ' campaign(s)? This will create new columns and fetch open data from Mailchimp.')) return;
