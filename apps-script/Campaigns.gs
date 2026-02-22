@@ -12,28 +12,21 @@ function getRecipientList(type) {
   var log = getEmailLog();
   var recipients = [];
 
-  if (type === 'new-donor') {
-    var thankedRolls = new Set(
-      log.filter(function(e) { return e.type === 'new-donor-thanks'; }).map(function(e) { return e.roll; })
-    );
-    recipients = profiles.filter(function(p) {
-      return p.segment === 'new-donor' && !thankedRolls.has(p.roll);
-    }).map(function(p) {
-      return { roll: p.roll, fullName: p.fullName, email: p.email, segment: p.segment, extra: formatDollars(p.currentYearAmt) + ' this year' };
-    });
-
-  } else if (type === 'quarterly') {
+  if (type === 'donor-thanks') {
+    // All current-year donors not yet thanked this year
     var now = new Date();
-    var quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
-    var alreadySent = new Set(
+    var yearStart = new Date(now.getFullYear(), 0, 1);
+    var thankedRolls = new Set(
       log.filter(function(e) {
-        return e.type === 'quarterly-thanks' && new Date(e.date) >= quarterStart;
+        return e.type === 'donor-thanks' && new Date(e.date) >= yearStart;
       }).map(function(e) { return e.roll; })
     );
     recipients = profiles.filter(function(p) {
-      return p.isMonthlyDonor && !alreadySent.has(p.roll);
+      return p.currentYearAmt > 0 && !thankedRolls.has(p.roll);
     }).map(function(p) {
-      return { roll: p.roll, fullName: p.fullName, email: p.email, segment: 'monthly-donor', extra: p.streak + ' month streak (' + p.fund + ')' };
+      var extra = formatDollars(p.currentYearAmt) + ' this year';
+      if (p.isMonthlyDonor) extra += ' | ' + p.streak + 'mo streak (' + p.fund + ')';
+      return { roll: p.roll, fullName: p.fullName, email: p.email, segment: p.segment, extra: extra };
     });
 
   } else if (type === 'lapsed') {
@@ -126,8 +119,7 @@ function sendCampaign(type, rollsToSend) {
   }
 
   var emailTypeMap = {
-    'new-donor': 'new-donor-thanks',
-    'quarterly': 'quarterly-thanks',
+    'donor-thanks': 'donor-thanks',
     'lapsed': 'lapsed-reengagement',
     'past-donors': 'annual-past',
     'non-donors': 'annual-nondonor'
@@ -149,10 +141,8 @@ function sendCampaign(type, rollsToSend) {
     if (!donor) { failed++; continue; }
 
     var emailData;
-    if (type === 'new-donor') {
-      emailData = newDonorThankYou(donor);
-    } else if (type === 'quarterly') {
-      emailData = quarterlyThankYouTemplate(donor);
+    if (type === 'donor-thanks') {
+      emailData = donorThankYou(donor);
     } else if (type === 'lapsed') {
       var prev = prevStreaks.get(roll) || 0;
       var enrichedDonor = {};

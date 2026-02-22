@@ -33,8 +33,16 @@ const EMAIL_CONFIG = {
 
   // Dynamic year-based donor column (matches js/config.js logic)
   YEAR_DONOR_BASE_YEAR: 2026,
-  YEAR_DONOR_BASE_COL: 101,  // CW = column 101
+  YEAR_DONOR_BASE_COL: 101,  // CW = column 101 (Total for 2026)
   YEAR_DONOR_COL_STEP: 6,
+
+  // Fund column offsets from the year's Total column (negative = left of Total)
+  // 2026: Scholarship=CR(96), Leadership=CS(97), BMS=CT(98), RLC=CU(99), Direct=CV(100), Total=CW(101)
+  FUND_OFFSET_SCHOLARSHIP: -5,
+  FUND_OFFSET_LEADERSHIP: -4,
+  FUND_OFFSET_BMS: -3,
+  FUND_OFFSET_RLC: -2,
+  FUND_OFFSET_DIRECT: -1,
 
   // Streak tracker columns
   TRACKER_FIRST_COL: 3,   // C

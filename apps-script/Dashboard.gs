@@ -14,7 +14,7 @@ function showDashboard() {
 
 /**
  * Send a preview email to the test recipients.
- * @param {string} type - one of: new-donor, quarterly, lapsed, past-donor, non-donor
+ * @param {string} type - one of: donor-thanks, lapsed, past-donor, non-donor
  * @returns {string} status message
  */
 function previewEmail(type) {
@@ -41,9 +41,23 @@ function dashboardSendCampaign(type, rolls) {
 }
 
 /**
- * Get current status for the dashboard display.
+ * Get current status for the dashboard display, including alert counts.
  * @returns {Object}
  */
 function getDashboardStatus() {
-  return getCampaignStatus();
+  var status = getCampaignStatus();
+
+  // Get pending counts for each campaign type (for green alert badges)
+  var alertTypes = ['donor-thanks', 'lapsed', 'past-donors', 'non-donors'];
+  var alerts = {};
+  for (var i = 0; i < alertTypes.length; i++) {
+    try {
+      alerts[alertTypes[i]] = getRecipientList(alertTypes[i]).length;
+    } catch (e) {
+      alerts[alertTypes[i]] = 0;
+    }
+  }
+  status.alerts = alerts;
+
+  return status;
 }

@@ -61,6 +61,13 @@ function getMasterData() {
   const currentYearCol = getCurrentYearDonorCol();
   const prevYearCol = getPreviousYearDonorCol();
 
+  // Per-fund columns for current year (offsets from total column)
+  const fundScholarshipCol = currentYearCol + EMAIL_CONFIG.FUND_OFFSET_SCHOLARSHIP;
+  const fundLeadershipCol = currentYearCol + EMAIL_CONFIG.FUND_OFFSET_LEADERSHIP;
+  const fundBmsCol = currentYearCol + EMAIL_CONFIG.FUND_OFFSET_BMS;
+  const fundRlcCol = currentYearCol + EMAIL_CONFIG.FUND_OFFSET_RLC;
+  const fundDirectCol = currentYearCol + EMAIL_CONFIG.FUND_OFFSET_DIRECT;
+
   const donors = [];
 
   for (let i = 0; i < data.length; i++) {
@@ -85,6 +92,13 @@ function getMasterData() {
     const prevYearAmt = prevYearCol <= row.length ? parseAmount(row[prevYearCol - 1]) : 0;
     const decade = String(row[EMAIL_CONFIG.COL_DECADE - 1] || '').trim();
 
+    // Per-fund amounts for current year
+    const currentYearScholarship = fundScholarshipCol <= row.length ? parseAmount(row[fundScholarshipCol - 1]) : 0;
+    const currentYearLeadership = fundLeadershipCol <= row.length ? parseAmount(row[fundLeadershipCol - 1]) : 0;
+    const currentYearBMS = fundBmsCol <= row.length ? parseAmount(row[fundBmsCol - 1]) : 0;
+    const currentYearRLC = fundRlcCol <= row.length ? parseAmount(row[fundRlcCol - 1]) : 0;
+    const currentYearDirect = fundDirectCol <= row.length ? parseAmount(row[fundDirectCol - 1]) : 0;
+
     donors.push({
       roll: roll,
       firstName: firstName,
@@ -93,7 +107,12 @@ function getMasterData() {
       totalDonations: totalDonations,
       currentYearAmt: currentYearAmt,
       prevYearAmt: prevYearAmt,
-      decade: decade
+      decade: decade,
+      currentYearScholarship: currentYearScholarship,
+      currentYearLeadership: currentYearLeadership,
+      currentYearBMS: currentYearBMS,
+      currentYearRLC: currentYearRLC,
+      currentYearDirect: currentYearDirect
     });
   }
 
@@ -194,6 +213,11 @@ function buildDonorProfiles() {
       totalDonations: donor.totalDonations,
       currentYearAmt: donor.currentYearAmt,
       prevYearAmt: donor.prevYearAmt,
+      currentYearScholarship: donor.currentYearScholarship || 0,
+      currentYearLeadership: donor.currentYearLeadership || 0,
+      currentYearBMS: donor.currentYearBMS || 0,
+      currentYearRLC: donor.currentYearRLC || 0,
+      currentYearDirect: donor.currentYearDirect || 0,
       streak: streak,
       fund: fund,
       decade: donor.decade,

@@ -11,7 +11,7 @@
 
     .section { background: #fff; border-radius: 8px; padding: 10px; margin-bottom: 10px; border: 1px solid #e0e0e0; }
 
-    .btn { display: block; width: 100%; padding: 8px 10px; margin: 4px 0; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+    .btn { display: block; width: 100%; padding: 8px 10px; margin: 4px 0; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; position: relative; }
     .btn:hover { opacity: 0.85; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -20,6 +20,10 @@
     .btn-send { background: #2e7d32; color: #fff; font-size: 13px; padding: 10px; }
     .btn-back { background: #999; color: #fff; }
     .btn-select { background: #e0e0e0; color: #333; font-size: 11px; padding: 6px; display: inline-block; width: auto; margin: 2px; }
+
+    /* Green alert badge */
+    .alert-badge { display: inline-block; background: #2e7d32; color: #fff; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+    .alert-badge.empty { display: none; }
 
     .status-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px; border-bottom: 1px solid #f0f0f0; }
     .status-row:last-child { border-bottom: none; }
@@ -74,8 +78,7 @@
     <div class="section">
       <h3>Test / Preview</h3>
       <p style="font-size:10px;color:#999;margin-bottom:6px;">Sends sample to test recipients (Tony, Sam, Joe)</p>
-      <button class="btn btn-preview" onclick="preview('new-donor')">Preview New Donor Email</button>
-      <button class="btn btn-preview" onclick="preview('quarterly')">Preview Quarterly Email</button>
+      <button class="btn btn-preview" onclick="preview('donor-thanks')">Preview Donor Thank-You</button>
       <button class="btn btn-preview" onclick="preview('lapsed')">Preview Lapsed Email</button>
       <button class="btn btn-preview" onclick="preview('past-donor')">Preview Past Donor Email</button>
       <button class="btn btn-preview" onclick="preview('non-donor')">Preview Non-Donor Email</button>
@@ -87,11 +90,18 @@
     <div class="section">
       <h3>Send Campaigns</h3>
       <p style="font-size:10px;color:#999;margin-bottom:6px;">Click to see recipients, review, then send</p>
-      <button class="btn btn-campaign" onclick="loadRecipients('new-donor')">New Donor Thank-Yous</button>
-      <button class="btn btn-campaign" onclick="loadRecipients('quarterly')">Quarterly Monthly Donor Thanks</button>
-      <button class="btn btn-campaign" onclick="loadRecipients('lapsed')">Lapsed Monthly Donors</button>
-      <button class="btn btn-campaign" onclick="loadRecipients('past-donors')">Annual: Past Donors</button>
-      <button class="btn btn-campaign" onclick="loadRecipients('non-donors')">Annual: Non-Donors</button>
+      <button class="btn btn-campaign" id="btn-donor-thanks" onclick="loadRecipients('donor-thanks')">
+        Donor Thank-Yous <span class="alert-badge empty" id="alert-donor-thanks"></span>
+      </button>
+      <button class="btn btn-campaign" id="btn-lapsed" onclick="loadRecipients('lapsed')">
+        Lapsed Monthly Donors <span class="alert-badge empty" id="alert-lapsed"></span>
+      </button>
+      <button class="btn btn-campaign" id="btn-past-donors" onclick="loadRecipients('past-donors')">
+        Annual: Past Donors <span class="alert-badge empty" id="alert-past-donors"></span>
+      </button>
+      <button class="btn btn-campaign" id="btn-non-donors" onclick="loadRecipients('non-donors')">
+        Annual: Non-Donors <span class="alert-badge empty" id="alert-non-donors"></span>
+      </button>
       <div id="campaign-spinner" class="spinner">Loading recipients...</div>
       <div id="campaign-msg" class="msg"></div>
     </div>
@@ -122,12 +132,31 @@
     var currentType = '';
     var currentRecipients = [];
 
-    // Load status on open
+    // Load status + alerts on open
     google.script.run.withSuccessHandler(updateStatus).getDashboardStatus();
 
     function updateStatus(status) {
       document.getElementById('sent-today').textContent = status.sentToday + ' / ' + status.dailyLimit;
       document.getElementById('last-send').textContent = status.lastSend;
+
+      // Update alert badges
+      if (status.alerts) {
+        updateBadge('alert-donor-thanks', status.alerts['donor-thanks'] || 0);
+        updateBadge('alert-lapsed', status.alerts['lapsed'] || 0);
+        updateBadge('alert-past-donors', status.alerts['past-donors'] || 0);
+        updateBadge('alert-non-donors', status.alerts['non-donors'] || 0);
+      }
+    }
+
+    function updateBadge(id, count) {
+      var el = document.getElementById(id);
+      if (count > 0) {
+        el.textContent = count + ' new';
+        el.className = 'alert-badge';
+      } else {
+        el.textContent = '';
+        el.className = 'alert-badge empty';
+      }
     }
 
     function showMsg(id, text, type) {
@@ -189,8 +218,7 @@
 
     // ---- Render recipient list ----
     var typeLabels = {
-      'new-donor': 'New Donor Thank-Yous',
-      'quarterly': 'Quarterly Monthly Donor Thanks',
+      'donor-thanks': 'Donor Thank-Yous',
       'lapsed': 'Lapsed Monthly Donors',
       'past-donors': 'Annual: Past Donors',
       'non-donors': 'Annual: Non-Donors'
@@ -293,6 +321,8 @@
     function backToMain() {
       document.getElementById('list-view').style.display = 'none';
       document.getElementById('main-view').style.display = 'block';
+      // Refresh alerts when coming back
+      google.script.run.withSuccessHandler(updateStatus).getDashboardStatus();
     }
 
     function escapeHtml(str) {

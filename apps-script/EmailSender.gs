@@ -23,8 +23,8 @@ function sendEmail(to, subject, htmlBody) {
 }
 
 /**
- * Send a preview email to the logged-in user.
- * @param {string} type - one of: new-donor, quarterly, lapsed, past-donor, non-donor
+ * Send a preview email to the test recipients.
+ * @param {string} type - one of: donor-thanks, lapsed, past-donor, non-donor
  * @returns {string} status message
  */
 function sendPreviewEmail(type) {
@@ -33,17 +33,12 @@ function sendPreviewEmail(type) {
 
   // Pick a sample donor based on type
   let sample;
-  if (type === 'new-donor') {
-    sample = profiles.find(p => p.segment === 'new-donor') || profiles.find(p => p.currentYearAmt > 0) || profiles[0];
-  } else if (type === 'quarterly') {
-    sample = profiles.find(p => p.isMonthlyDonor) || profiles[0];
-    if (!sample.isMonthlyDonor) {
-      sample.streak = 14; // Fake streak for preview
-      sample.fund = 'Both';
-    }
+  if (type === 'donor-thanks') {
+    // Try to find a monthly donor first for a richer preview, otherwise any current year donor
+    sample = profiles.find(p => p.isMonthlyDonor && p.currentYearAmt > 0) || profiles.find(p => p.currentYearAmt > 0) || profiles[0];
   } else if (type === 'lapsed') {
     sample = profiles.find(p => p.totalDonations > 0) || profiles[0];
-    sample.prevStreak = sample.streak > 0 ? sample.streak : 8; // Fake previous streak for preview
+    sample.prevStreak = sample.streak > 0 ? sample.streak : 8;
   } else if (type === 'past-donor') {
     sample = profiles.find(p => p.segment === 'past-donor') || profiles.find(p => p.totalDonations > 0) || profiles[0];
   } else if (type === 'non-donor') {
@@ -55,11 +50,8 @@ function sendPreviewEmail(type) {
   // Generate email content
   let emailData;
   switch (type) {
-    case 'new-donor':
-      emailData = newDonorThankYou(sample);
-      break;
-    case 'quarterly':
-      emailData = quarterlyThankYouTemplate(sample);
+    case 'donor-thanks':
+      emailData = donorThankYou(sample);
       break;
     case 'lapsed':
       emailData = lapsedReengagement(sample);
