@@ -253,55 +253,37 @@ function loadCampaigns() {
 }
 
 // ===========================
-// Campaign Tracking — Open Rate Columns
+// Campaign Tracking — Open / Didn't Open Tabs
 // ===========================
 
 /**
- * Track selected campaigns — create columns and populate open/didn't open data.
- * @param {Object[]} selections - array of { subject, campaignIds } from the dashboard
+ * Track selected campaigns — populate roll numbers into Open and Didn't Open tabs.
+ * Each campaign gets a column labeled "Mon DD, YY - First Two Words".
+ * Pulls email→roll mapping directly from Mailchimp.
+ * @param {Object[]} selections - array of { subject, campaignIds, latestSendDate } from the dashboard
  * @returns {string} status message
  */
 function trackCampaigns(selections) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var statsSheet = ss.getSheetByName(MC_CONFIG.EMAIL_STATS_TAB);
   var openSheet = ss.getSheetByName(MC_CONFIG.OPEN_TAB);
   var didntOpenSheet = ss.getSheetByName(MC_CONFIG.DIDNT_OPEN_TAB);
 
-  if (!statsSheet) throw new Error('Email Stats tab not found');
+  if (!openSheet) throw new Error('Open tab not found');
+  if (!didntOpenSheet) throw new Error("Didn't Open tab not found");
 
-  var lastRow = statsSheet.getLastRow();
-  var dataStartRow = MC_CONFIG.DATA_START_ROW;
-  if (lastRow < dataStartRow) throw new Error('No data in Email Stats');
-
-  // Read member data (starts at DATA_START_ROW, not row 2)
-  var numDataRows = lastRow - dataStartRow + 1;
-  var rollData = statsSheet.getRange(dataStartRow, MC_CONFIG.ROLL_COL, numDataRows, 1).getValues();
-  var emailData = statsSheet.getRange(dataStartRow, MC_CONFIG.EMAIL_COL, numDataRows, 1).getValues();
-
-  // Track where protected columns start (shifts as we insert)
-  var protectedCol = MC_CONFIG.PROTECTED_START_COL;
-
-  // Get next tracking column from saved position, or fall back to scanning
-  var props = PropertiesService.getScriptProperties();
-  var savedNextCol = props.getProperty('NEXT_TRACKING_COL');
-  var nextCol;
-  if (savedNextCol) {
-    nextCol = parseInt(savedNextCol, 10);
-  } else {
-    // First time: scan label row to find where to start
-    nextCol = MC_CONFIG.TRACKING_START_COL;
-    for (var col = MC_CONFIG.TRACKING_START_COL; col < protectedCol; col++) {
-      if (!statsSheet.getRange(MC_CONFIG.LABEL_ROW, col).getValue()) {
-        nextCol = col;
-        break;
-      }
-      nextCol = col + 1;
+  // Build email → roll lookup from Mailchimp
+  var mcMembers = mcGetAllMembers();
+  var emailToRoll = {};
+  for (var i = 0; i < mcMembers.length; i++) {
+    var m = mcMembers[i];
+    if (m.email && m.roll) {
+      emailToRoll[m.email] = m.roll;
     }
   }
 
-  // Find next available column in Open and Didn't Open tabs
-  var openNextCol = openSheet ? Math.max(1, openSheet.getLastColumn() + 1) : 1;
-  var didntOpenNextCol = didntOpenSheet ? Math.max(1, didntOpenSheet.getLastColumn() + 1) : 1;
+  // Find next available column in each tab
+  var openNextCol = Math.max(1, openSheet.getLastColumn() + 1);
+  var didntOpenNextCol = Math.max(1, didntOpenSheet.getLastColumn() + 1);
 
   var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var tracked = 0;
@@ -311,20 +293,7 @@ function trackCampaigns(selections) {
     var campaignIds = sel.campaignIds;
     var subject = sel.subject;
 
-    // ALWAYS insert a new column so existing data is never overwritten.
-    // Insert at nextCol — everything from nextCol onward shifts right.
-    statsSheet.insertColumnBefore(nextCol);
-    protectedCol++; // protected range shifted right too
-
-    // Copy the entire previous column (formulas + values + formatting) into the new blank column
-    var prevCol = nextCol - 1;
-    if (prevCol >= MC_CONFIG.TRACKING_START_COL) {
-      var srcRange = statsSheet.getRange(1, prevCol, lastRow, 1);
-      var destRange = statsSheet.getRange(1, nextCol, lastRow, 1);
-      srcRange.copyTo(destRange);
-    }
-
-    // Collect all emails that were sent to (union across resends)
+    // Fetch sent-to and open data from Mailchimp
     var sentToEmails = {};
     var openedEmails = {};
 
@@ -342,7 +311,28 @@ function trackCampaigns(selections) {
       }
     }
 
-    // Format the label: "Feb 20, 26 - First Two"
+    // Build roll number lists from sent-to emails
+    var openRolls = [];
+    var didntOpenRolls = [];
+
+    var allSentEmails = Object.keys(sentToEmails);
+    for (var e = 0; e < allSentEmails.length; e++) {
+      var email = allSentEmails[e];
+      var roll = emailToRoll[email];
+      if (!roll) continue;
+
+      if (openedEmails[email]) {
+        openRolls.push(roll);
+      } else {
+        didntOpenRolls.push(roll);
+      }
+    }
+
+    // Sort roll numbers
+    openRolls.sort();
+    didntOpenRolls.sort();
+
+    // Format column label: "Feb 2, 26 - Winter Retreat"
     var shortSubject = subject.split(/\s+/).slice(0, 2).join(' ');
     var label = shortSubject;
     if (sel.latestSendDate) {
@@ -351,58 +341,26 @@ function trackCampaigns(selections) {
       label = dateStr + ' - ' + shortSubject;
     }
 
-    // Prepare column data + Open/Didn't Open lists
-    var colValues = [];
-    var openRolls = [];
-    var didntOpenRolls = [];
-
-    for (var r = 0; r < rollData.length; r++) {
-      var rowEmail = String(emailData[r][0] || '').trim().toLowerCase();
-      var rowRoll = String(rollData[r][0] || '').trim();
-
-      if (!rowEmail || !sentToEmails[rowEmail]) {
-        colValues.push(['']);
-      } else if (openedEmails[rowEmail]) {
-        colValues.push(['Opened']);
-        if (rowRoll) openRolls.push(rowRoll);
-      } else {
-        colValues.push(['Did Not Open']);
-        if (rowRoll) didntOpenRolls.push(rowRoll);
-      }
-    }
-
-    // Write tracking data to Email Stats (only the member data rows)
-    if (colValues.length > 0) {
-      statsSheet.getRange(dataStartRow, nextCol, colValues.length, 1).setValues(colValues);
-    }
-
-    // Write campaign label in row 1
-    statsSheet.getRange(MC_CONFIG.LABEL_ROW, nextCol).setValue(label);
-
     // Write to Open tab
-    if (openSheet && openRolls.length > 0) {
-      openSheet.getRange(1, openNextCol).setValue(subject);
+    if (openRolls.length > 0) {
+      openSheet.getRange(1, openNextCol).setValue(label);
       var openValues = openRolls.map(function(r) { return [r]; });
       openSheet.getRange(2, openNextCol, openValues.length, 1).setValues(openValues);
       openNextCol++;
     }
 
     // Write to Didn't Open tab
-    if (didntOpenSheet && didntOpenRolls.length > 0) {
-      didntOpenSheet.getRange(1, didntOpenNextCol).setValue(subject);
+    if (didntOpenRolls.length > 0) {
+      didntOpenSheet.getRange(1, didntOpenNextCol).setValue(label);
       var didntOpenValues = didntOpenRolls.map(function(r) { return [r]; });
       didntOpenSheet.getRange(2, didntOpenNextCol, didntOpenValues.length, 1).setValues(didntOpenValues);
       didntOpenNextCol++;
     }
 
-    nextCol++;
     tracked++;
   }
 
-  // Save next available column for the next import
-  props.setProperty('NEXT_TRACKING_COL', String(nextCol));
-
-  return 'Tracked ' + tracked + ' campaign(s). New columns added to Email Stats, Open, and Didn\'t Open tabs.';
+  return 'Tracked ' + tracked + ' campaign(s). Columns added to Open and Didn\'t Open tabs.';
 }
 
 // ===========================
