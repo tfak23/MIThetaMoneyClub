@@ -322,19 +322,62 @@ function lapsedReengagement(donor) {
 }
 
 /**
- * Annual re-engagement email for past donors (gave before, not this year).
+ * Build previous year fund callback HTML — lists funds the donor supported last year.
  */
-function annualPastDonor(donor) {
-  var body = '<h2 style="color:#2d2d2d;margin-top:0;">Hey ' + donor.firstName + ', We Could Use Your Help Again</h2>'
-    + '<p style="font-size:16px;color:#555;line-height:1.6;">Over the years, you\'ve made a difference for MI Theta. That generosity has directly funded scholarships and leadership development for our undergraduates.</p>';
+function prevYearFundCallbackHtml(donor) {
+  var funds = [];
+  if (donor.prevYearBMS > 0) funds.push('Balanced Man Scholarship Fund');
+  if (donor.prevYearLeadership > 0) funds.push('Leadership Fund');
+  if (donor.prevYearScholarship > 0) funds.push('Scholarship Fund');
+  if (donor.prevYearRLC > 0) funds.push('RLC Fund');
+  if (donor.prevYearDirect > 0) funds.push('Direct Fund');
 
+  if (funds.length === 0) return '';
+
+  var fundList = funds.length === 1 ? funds[0] : funds.slice(0, -1).join(', ') + ' and ' + funds[funds.length - 1];
+  return '<p style="font-size:16px;color:#555;line-height:1.6;">Last year you supported the <strong>' + fundList + '</strong>. That support is still making an impact for our brothers today.</p>';
+}
+
+/**
+ * Annual re-engagement email for past donors (gave before, not this year).
+ * Personalized with legacy framing, fund callback, next-level nudge, and social proof.
+ * @param {Object} donor - donor profile
+ * @param {number} activeDonorCount - number of brothers who have donated this year
+ */
+function annualPastDonor(donor, activeDonorCount) {
+  var level = getGivingLevel(donor.totalDonations);
+  var nextLevel = getNextGivingLevel(donor.totalDonations);
+  var levelName = level ? level.name : '';
+
+  // Legacy framing
+  var body = '<h2 style="color:#2d2d2d;margin-top:0;">Hey ' + donor.firstName + ', We Could Use Your Help Again</h2>'
+    + '<p style="font-size:16px;color:#555;line-height:1.6;">You\'ve contributed <strong>' + formatDollars(donor.totalDonations) + '</strong> to MI Theta over the years'
+    + (levelName ? ' — that\'s <strong>' + levelName + '</strong>-level impact.' : '.') + ' That generosity has directly funded scholarships and leadership development for our brothers.</p>';
+
+  // Fund callback (if they gave to specific funds last year)
+  body += prevYearFundCallbackHtml(donor);
+
+  // Profile card
   body += profileCard(donor);
 
-  body += '<p style="font-size:16px;color:#555;line-height:1.6;">This year, we\'re working toward fully funding our scholarship endowments. A gift of any size helps us get there:</p>'
-    + '<div style="text-align:center;margin:16px 0;">'
+  // Next-level nudge
+  if (nextLevel && level) {
+    var remaining = nextLevel.min - donor.totalDonations;
+    body += '<p style="font-size:16px;color:#555;line-height:1.6;">You\'re just <strong>' + formatDollars(remaining) + '</strong> away from reaching <strong>' + nextLevel.name + '</strong>. A gift of any size gets you closer:</p>';
+  } else {
+    body += '<p style="font-size:16px;color:#555;line-height:1.6;">Keep your legacy going — a gift of any size makes a difference:</p>';
+  }
+
+  // Donate buttons
+  body += '<div style="text-align:center;margin:16px 0;">'
     + '<a href="' + EMAIL_CONFIG.DONATE_BMS + '" style="display:inline-block;background:#9B1B30;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Support BMS Fund</a> '
     + '<a href="' + EMAIL_CONFIG.DONATE_LEADERSHIP + '" style="display:inline-block;background:#6A1B4D;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Support Leadership Fund</a>'
     + '</div>';
+
+  // Social proof
+  if (activeDonorCount > 0) {
+    body += '<p style="font-size:16px;color:#555;line-height:1.6;text-align:center;"><strong>' + activeDonorCount + ' brothers</strong> have already donated this year — join them.</p>';
+  }
 
   body += overallProgressCta();
   body += '<p style="font-size:14px;color:#999;text-align:center;margin-top:24px;">Virtue, Diligence, Brotherly Love</p>';
@@ -351,7 +394,7 @@ function annualPastDonor(donor) {
 function annualNonDonor(donor) {
   var body = '<h2 style="color:#2d2d2d;margin-top:0;">Hey ' + donor.firstName + ', Your Brothers Need You</h2>'
     + '<p style="font-size:16px;color:#555;line-height:1.6;">MI Theta has been building something special — scholarships that change lives and leadership programs that shape the next generation of SigEp brothers at Lawrence Tech.</p>'
-    + '<p style="font-size:16px;color:#555;line-height:1.6;">Right now, dozens of MI Theta alumni are giving back through the Money Club. A first-time gift of even <strong>$25</strong> makes a difference and adds your name to the board:</p>'
+    + '<p style="font-size:16px;color:#555;line-height:1.6;">Right now, dozens of MI Theta alumni are giving back through the Money Club. A first-time gift of even <strong>$19.01</strong> makes a difference and adds your name to the board:</p>'
     + '<div style="text-align:center;margin:16px 0;">'
     + '<a href="' + EMAIL_CONFIG.DONATE_BMS + '" style="display:inline-block;background:#9B1B30;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Support BMS Fund</a> '
     + '<a href="' + EMAIL_CONFIG.DONATE_LEADERSHIP + '" style="display:inline-block;background:#6A1B4D;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;margin:4px;">Support Leadership Fund</a>'

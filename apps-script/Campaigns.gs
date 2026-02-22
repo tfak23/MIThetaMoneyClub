@@ -118,6 +118,9 @@ function sendCampaign(type, rollsToSend) {
     }
   }
 
+  // Count active donors this year (for social proof in past-donor emails)
+  var activeDonorCount = profiles.filter(function(p) { return p.currentYearAmt > 0; }).length;
+
   var emailTypeMap = {
     'donor-thanks': 'donor-thanks',
     'lapsed': 'lapsed-reengagement',
@@ -150,7 +153,7 @@ function sendCampaign(type, rollsToSend) {
       enrichedDonor.prevStreak = prev;
       emailData = lapsedReengagement(enrichedDonor);
     } else if (type === 'past-donors') {
-      emailData = annualPastDonor(donor);
+      emailData = annualPastDonor(donor, activeDonorCount);
     } else if (type === 'non-donors') {
       emailData = annualNonDonor(donor);
     } else {

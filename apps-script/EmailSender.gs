@@ -47,6 +47,9 @@ function sendPreviewEmail(type) {
     return 'Unknown email type: ' + type;
   }
 
+  // Count active donors for social proof
+  const activeDonorCount = profiles.filter(p => p.currentYearAmt > 0).length;
+
   // Generate email content
   let emailData;
   switch (type) {
@@ -57,7 +60,7 @@ function sendPreviewEmail(type) {
       emailData = lapsedReengagement(sample);
       break;
     case 'past-donor':
-      emailData = annualPastDonor(sample);
+      emailData = annualPastDonor(sample, activeDonorCount);
       break;
     case 'non-donor':
       emailData = annualNonDonor(sample);

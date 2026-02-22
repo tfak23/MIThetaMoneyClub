@@ -68,6 +68,13 @@ function getMasterData() {
   const fundRlcCol = currentYearCol + EMAIL_CONFIG.FUND_OFFSET_RLC;
   const fundDirectCol = currentYearCol + EMAIL_CONFIG.FUND_OFFSET_DIRECT;
 
+  // Per-fund columns for previous year (same offsets, different base)
+  const prevFundScholarshipCol = prevYearCol + EMAIL_CONFIG.FUND_OFFSET_SCHOLARSHIP;
+  const prevFundLeadershipCol = prevYearCol + EMAIL_CONFIG.FUND_OFFSET_LEADERSHIP;
+  const prevFundBmsCol = prevYearCol + EMAIL_CONFIG.FUND_OFFSET_BMS;
+  const prevFundRlcCol = prevYearCol + EMAIL_CONFIG.FUND_OFFSET_RLC;
+  const prevFundDirectCol = prevYearCol + EMAIL_CONFIG.FUND_OFFSET_DIRECT;
+
   const donors = [];
 
   for (let i = 0; i < data.length; i++) {
@@ -99,6 +106,13 @@ function getMasterData() {
     const currentYearRLC = fundRlcCol <= row.length ? parseAmount(row[fundRlcCol - 1]) : 0;
     const currentYearDirect = fundDirectCol <= row.length ? parseAmount(row[fundDirectCol - 1]) : 0;
 
+    // Per-fund amounts for previous year
+    const prevYearScholarship = prevFundScholarshipCol <= row.length ? parseAmount(row[prevFundScholarshipCol - 1]) : 0;
+    const prevYearLeadership = prevFundLeadershipCol <= row.length ? parseAmount(row[prevFundLeadershipCol - 1]) : 0;
+    const prevYearBMS = prevFundBmsCol <= row.length ? parseAmount(row[prevFundBmsCol - 1]) : 0;
+    const prevYearRLC = prevFundRlcCol <= row.length ? parseAmount(row[prevFundRlcCol - 1]) : 0;
+    const prevYearDirect = prevFundDirectCol <= row.length ? parseAmount(row[prevFundDirectCol - 1]) : 0;
+
     donors.push({
       roll: roll,
       firstName: firstName,
@@ -112,7 +126,12 @@ function getMasterData() {
       currentYearLeadership: currentYearLeadership,
       currentYearBMS: currentYearBMS,
       currentYearRLC: currentYearRLC,
-      currentYearDirect: currentYearDirect
+      currentYearDirect: currentYearDirect,
+      prevYearScholarship: prevYearScholarship,
+      prevYearLeadership: prevYearLeadership,
+      prevYearBMS: prevYearBMS,
+      prevYearRLC: prevYearRLC,
+      prevYearDirect: prevYearDirect
     });
   }
 
@@ -218,6 +237,11 @@ function buildDonorProfiles() {
       currentYearBMS: donor.currentYearBMS || 0,
       currentYearRLC: donor.currentYearRLC || 0,
       currentYearDirect: donor.currentYearDirect || 0,
+      prevYearScholarship: donor.prevYearScholarship || 0,
+      prevYearLeadership: donor.prevYearLeadership || 0,
+      prevYearBMS: donor.prevYearBMS || 0,
+      prevYearRLC: donor.prevYearRLC || 0,
+      prevYearDirect: donor.prevYearDirect || 0,
       streak: streak,
       fund: fund,
       decade: donor.decade,
