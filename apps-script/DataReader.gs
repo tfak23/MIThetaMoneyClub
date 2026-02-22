@@ -46,6 +46,29 @@ function getUnsubscribed() {
 }
 
 /**
+ * Get set of deceased roll numbers from the Membership Status tab.
+ * @returns {Set<string>}
+ */
+function getDeceased() {
+  const ss = SpreadsheetApp.openById(EMAIL_CONFIG.EMAIL_SHEET_ID);
+  const sheet = ss.getSheetByName(EMAIL_CONFIG.MEMBERSHIP_TAB);
+  if (!sheet) return new Set();
+
+  const data = sheet.getDataRange().getValues();
+  const deceased = new Set();
+
+  for (let i = 1; i < data.length; i++) {
+    const status = String(data[i][EMAIL_CONFIG.MEMBERSHIP_STATUS_COL - 1] || '').trim().toLowerCase();
+    if (status === 'deceased') {
+      const roll = String(data[i][EMAIL_CONFIG.MEMBERSHIP_ROLL_COL - 1] || '').trim();
+      if (roll) deceased.add(roll);
+    }
+  }
+
+  return deceased;
+}
+
+/**
  * Read Master tab and return donor objects.
  */
 function getMasterData() {
@@ -197,6 +220,7 @@ function buildDonorProfiles() {
   const masterData = getMasterData();
   const emailLookup = getEmailLookup();
   const unsubscribed = getUnsubscribed();
+  const deceased = getDeceased();
   const streaks = getMonthlyStreaks();
 
   const profiles = [];
@@ -205,6 +229,7 @@ function buildDonorProfiles() {
     const email = emailLookup.get(donor.roll);
     if (!email) continue; // No email on file — skip
     if (unsubscribed.has(donor.roll)) continue; // Unsubscribed — skip
+    if (deceased.has(donor.roll)) continue; // Deceased — skip
 
     // Look up streak by full name
     const streakInfo = streaks.get(donor.fullName);

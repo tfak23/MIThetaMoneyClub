@@ -16,6 +16,9 @@ const EMAIL_CONFIG = {
   EMAIL_ADDR_COL: 12,   // Column L
   UNSUB_TAB: 'Unsubscribed',
   UNSUB_ROLL_COL: 1,    // Column A
+  MEMBERSHIP_TAB: 'Membership Status',
+  MEMBERSHIP_ROLL_COL: 9,    // Column I
+  MEMBERSHIP_STATUS_COL: 2,  // Column B
 
   // Email log (tab in donor sheet)
   LOG_TAB: 'Email Log',

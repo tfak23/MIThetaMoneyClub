@@ -1184,14 +1184,39 @@ main {
    Action Buttons Row
    =========================== */
 
+.leaderboards-section {
+    text-align: center;
+    padding: 32px 20px 0;
+}
+
 .action-buttons-row {
     display: flex;
     justify-content: center;
     gap: 16px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     padding: 24px 20px;
     max-width: 700px;
     margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+    .action-buttons-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .action-buttons-row .top-donors-btn-section,
+    .action-buttons-row .decade-btn-section,
+    .action-buttons-row .monthly-donors-btn-section {
+        width: 100%;
+    }
+
+    .top-donors-card-btn,
+    .decade-card-btn,
+    .monthly-donors-card-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* ===========================
