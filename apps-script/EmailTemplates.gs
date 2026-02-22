@@ -229,11 +229,14 @@ function fundBreakdownHtml(donor) {
 
   if (funds.length === 0) return '';
 
-  var html = '<div style="margin:16px 0;padding:16px;background:#f9f5ff;border-radius:8px;border:1px solid #e8ddf0;">';
-  html += '<p style="margin:0 0 8px;font-size:13px;color:#6A1B4D;font-weight:bold;text-transform:uppercase;">Your ' + new Date().getFullYear() + ' Contributions</p>';
+  // Center the contributions block for better readability in emails (mobile-friendly)
+  var html = '<div style="margin:16px 0;padding:16px;background:#f9f5ff;border-radius:8px;border:1px solid #e8ddf0;text-align:center;">';
+  html += '<p style="margin:0 0 8px;font-size:13px;color:#6A1B4D;font-weight:bold;text-transform:uppercase;text-align:center;">Your ' + new Date().getFullYear() + ' Contributions</p>';
   for (var i = 0; i < funds.length; i++) {
-    html += '<p style="margin:4px 0;font-size:15px;color:#555;">'
-      + '<strong>' + formatDollars(funds[i].amount) + '</strong> to the ' + funds[i].name
+    // Amount on one centered line, fund name on the next (smaller text) — improves wrapping on mobile
+    html += '<p style="margin:6px 0;font-size:15px;color:#555;text-align:center;">'
+      + '<strong>' + formatDollars(funds[i].amount) + '</strong><br/>'
+      + '<span style="font-size:13px;color:#555;">to the ' + funds[i].name + '</span>'
       + '</p>';
   }
   html += '</div>';

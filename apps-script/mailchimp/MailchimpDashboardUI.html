@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; padding: 12px; background: #f9f9f9; color: #333; font-size: 13px; }
+
+    h2 { font-size: 16px; color: #6A1B4D; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    h3 { font-size: 12px; color: #9B1B30; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .section { background: #fff; border-radius: 8px; padding: 10px; margin-bottom: 10px; border: 1px solid #e0e0e0; }
+
+    .btn { display: block; width: 100%; padding: 8px 10px; margin: 4px 0; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary { background: #6A1B4D; color: #fff; }
+    .btn-success { background: #2e7d32; color: #fff; }
+    .btn-warning { background: #e65100; color: #fff; }
+    .btn-secondary { background: #999; color: #fff; }
+    .btn-small { display: inline-block; width: auto; padding: 4px 10px; font-size: 11px; margin: 2px; }
+
+    .status-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px; border-bottom: 1px solid #f0f0f0; }
+    .status-row:last-child { border-bottom: none; }
+    .status-label { color: #999; }
+    .status-value { font-weight: bold; color: #333; }
+
+    .msg { font-size: 12px; padding: 8px; border-radius: 4px; margin-top: 6px; display: none; }
+    .msg-success { background: #e8f5e9; color: #2e7d32; }
+    .msg-error { background: #fbe9e7; color: #c62828; }
+    .msg-info { background: #e3f2fd; color: #1565c0; }
+
+    .spinner { display: none; text-align: center; padding: 6px; font-size: 12px; color: #999; }
+
+    /* API Key input */
+    .api-input { width: 100%; padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; margin: 4px 0; }
+
+    /* Mismatch list */
+    .mismatch-list { max-height: 300px; overflow-y: auto; margin: 8px 0; }
+    .mismatch-item { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px; }
+    .mismatch-item:last-child { border-bottom: none; }
+    .mismatch-roll { font-weight: bold; color: #6A1B4D; }
+    .mismatch-old { color: #c62828; text-decoration: line-through; }
+    .mismatch-new { color: #2e7d32; font-weight: bold; }
+
+    /* Campaign list */
+    .campaign-list { max-height: 400px; overflow-y: auto; margin: 8px 0; }
+    .campaign-item { padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+    .campaign-item:last-child { border-bottom: none; }
+    .campaign-item:hover { background: #f9f9f9; }
+    .campaign-cb { margin-right: 8px; }
+    .campaign-subject { font-weight: bold; color: #333; display: block; }
+    .campaign-detail { color: #999; font-size: 11px; display: block; margin-top: 2px; }
+    .campaign-count { font-size: 12px; color: #6A1B4D; font-weight: bold; margin: 6px 0; }
+
+    .badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 8px; font-weight: bold; margin-left: 4px; }
+    .badge-resend { background: #fff3e0; color: #e65100; }
+  </style>
+</head>
+<body>
+
+  <h2>Mailchimp Dashboard</h2>
+
+  <!-- API Key Setup -->
+  <div class="section" id="setup-section">
+    <h3>Setup</h3>
+    <div id="setup-status"></div>
+    <div id="api-key-form" style="display:none;">
+      <input type="text" class="api-input" id="api-key-input" placeholder="Paste your Mailchimp API key (e.g. abc123-us21)">
+      <button class="btn btn-primary" onclick="saveApiKey()">Save API Key</button>
+    </div>
+    <div id="setup-msg" class="msg"></div>
+  </div>
+
+  <!-- Email Sync -->
+  <div class="section" id="sync-section" style="display:none;">
+    <h3>Email Sync</h3>
+    <p style="font-size:10px;color:#999;margin-bottom:6px;">Fetch emails from Mailchimp and flag any mismatches with your sheet</p>
+    <button class="btn btn-primary" id="btn-sync" onclick="runSync()">Sync Emails from Mailchimp</button>
+    <div id="sync-spinner" class="spinner">Syncing contacts...</div>
+    <div id="sync-msg" class="msg"></div>
+
+    <div id="sync-results" style="display:none;">
+      <div class="status-row">
+        <span class="status-label">Total contacts</span>
+        <span class="status-value" id="sync-total">-</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Matches</span>
+        <span class="status-value" id="sync-matches" style="color:#2e7d32;">-</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Mismatches</span>
+        <span class="status-value" id="sync-mismatches" style="color:#c62828;">-</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Not in Mailchimp</span>
+        <span class="status-value" id="sync-not-in-mc">-</span>
+      </div>
+
+      <div id="mismatch-section" style="display:none;">
+        <h3>Mismatches Found</h3>
+        <button class="btn btn-warning btn-small" onclick="acceptAll()">Accept All Updates</button>
+        <div class="mismatch-list" id="mismatch-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Campaigns -->
+  <div class="section" id="campaigns-section" style="display:none;">
+    <h3>Campaign Tracking</h3>
+    <p style="font-size:10px;color:#999;margin-bottom:6px;">Load campaigns from Mailchimp, select which to track open rates for</p>
+    <button class="btn btn-primary" id="btn-load-campaigns" onclick="loadCampaigns()">Load Campaigns</button>
+    <div id="campaigns-spinner" class="spinner">Loading campaigns...</div>
+    <div id="campaigns-msg" class="msg"></div>
+
+    <div id="campaigns-results" style="display:none;">
+      <p class="campaign-count" id="campaign-count"></p>
+      <div class="campaign-list" id="campaign-list"></div>
+      <button class="btn btn-success" id="btn-track" onclick="trackSelected()" style="display:none;">Track Selected Campaigns</button>
+      <div id="track-spinner" class="spinner">Processing open rates...</div>
+      <div id="track-msg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- Unsubscribe Sync -->
+  <div class="section" id="unsub-section" style="display:none;">
+    <h3>Unsubscribe Sync</h3>
+    <p style="font-size:10px;color:#999;margin-bottom:6px;">Update the Unsubscribed tab with Mailchimp's latest data</p>
+    <button class="btn btn-secondary" onclick="runUnsubSync()">Sync Unsubscribes</button>
+    <div id="unsub-spinner" class="spinner">Syncing unsubscribes...</div>
+    <div id="unsub-msg" class="msg"></div>
+  </div>
+
+  <!-- Status -->
+  <div class="section" id="status-section" style="display:none;">
+    <h3>Status</h3>
+    <div class="status-row">
+      <span class="status-label">Last email sync</span>
+      <span class="status-value" id="last-sync">-</span>
+    </div>
+  </div>
+
+  <script>
+    var currentCampaigns = [];
+
+    // Initialize on load
+    google.script.run.withSuccessHandler(function(status) {
+      if (status.configured) {
+        document.getElementById('setup-status').innerHTML = '<p style="font-size:11px;color:#2e7d32;margin-bottom:4px;">API key configured</p>';
+        document.getElementById('api-key-form').style.display = 'none';
+        showMainSections();
+        document.getElementById('last-sync').textContent = status.lastSync;
+      } else {
+        document.getElementById('setup-status').innerHTML = '<p style="font-size:11px;color:#c62828;margin-bottom:4px;">API key not set</p>';
+        document.getElementById('api-key-form').style.display = 'block';
+      }
+    }).getMcStatus();
+
+    function showMainSections() {
+      document.getElementById('sync-section').style.display = 'block';
+      document.getElementById('campaigns-section').style.display = 'block';
+      document.getElementById('unsub-section').style.display = 'block';
+      document.getElementById('status-section').style.display = 'block';
+    }
+
+    function showMsg(id, text, type) {
+      var el = document.getElementById(id);
+      el.className = 'msg msg-' + type;
+      el.textContent = text;
+      el.style.display = 'block';
+    }
+
+    // ---- API Key ----
+    function saveApiKey() {
+      var key = document.getElementById('api-key-input').value.trim();
+      if (!key) { showMsg('setup-msg', 'Please enter an API key.', 'error'); return; }
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          showMsg('setup-msg', result, 'success');
+          document.getElementById('api-key-form').style.display = 'none';
+          document.getElementById('setup-status').innerHTML = '<p style="font-size:11px;color:#2e7d32;">API key configured</p>';
+          showMainSections();
+        })
+        .withFailureHandler(function(err) {
+          showMsg('setup-msg', 'Error: ' + err.message, 'error');
+        })
+        .dashboardSaveApiKey(key);
+    }
+
+    // ---- Email Sync ----
+    function runSync() {
+      document.getElementById('sync-spinner').style.display = 'block';
+      document.getElementById('sync-msg').style.display = 'none';
+      document.getElementById('sync-results').style.display = 'none';
+      document.getElementById('btn-sync').disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('sync-spinner').style.display = 'none';
+          document.getElementById('btn-sync').disabled = false;
+          document.getElementById('sync-results').style.display = 'block';
+
+          document.getElementById('sync-total').textContent = result.total;
+          document.getElementById('sync-matches').textContent = result.matches;
+          document.getElementById('sync-mismatches').textContent = result.mismatches;
+          document.getElementById('sync-not-in-mc').textContent = result.notInMailchimp;
+
+          if (result.mismatches > 0 && result.mismatchList) {
+            renderMismatches(result.mismatchList);
+          } else {
+            document.getElementById('mismatch-section').style.display = 'none';
+            showMsg('sync-msg', 'All emails match!', 'success');
+          }
+
+          document.getElementById('last-sync').textContent = new Date().toLocaleString();
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('sync-spinner').style.display = 'none';
+          document.getElementById('btn-sync').disabled = false;
+          showMsg('sync-msg', 'Error: ' + err.message, 'error');
+        })
+        .dashboardSyncEmails();
+    }
+
+    function renderMismatches(list) {
+      document.getElementById('mismatch-section').style.display = 'block';
+      var container = document.getElementById('mismatch-list');
+      container.innerHTML = '';
+
+      for (var i = 0; i < list.length; i++) {
+        var m = list[i];
+        var div = document.createElement('div');
+        div.className = 'mismatch-item';
+        div.id = 'mismatch-' + m.row;
+        div.innerHTML = '<span class="mismatch-roll">#' + escapeHtml(m.roll) + '</span><br>'
+          + '<span class="mismatch-old">' + escapeHtml(m.sheetEmail) + '</span> → '
+          + '<span class="mismatch-new">' + escapeHtml(m.mcEmail) + '</span> '
+          + '<button class="btn btn-success btn-small" onclick="acceptOne(' + m.row + ')">Accept</button>';
+        container.appendChild(div);
+      }
+    }
+
+    function acceptOne(row) {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          var el = document.getElementById('mismatch-' + row);
+          if (el) el.innerHTML = '<span style="color:#2e7d32;font-size:11px;">Updated</span>';
+        })
+        .withFailureHandler(function(err) {
+          showMsg('sync-msg', 'Error: ' + err.message, 'error');
+        })
+        .dashboardAcceptUpdate(row);
+    }
+
+    function acceptAll() {
+      if (!confirm('Update all mismatched emails to match Mailchimp?')) return;
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          showMsg('sync-msg', result, 'success');
+          document.getElementById('mismatch-section').style.display = 'none';
+        })
+        .withFailureHandler(function(err) {
+          showMsg('sync-msg', 'Error: ' + err.message, 'error');
+        })
+        .dashboardAcceptAll();
+    }
+
+    // ---- Campaigns ----
+    function loadCampaigns() {
+      document.getElementById('campaigns-spinner').style.display = 'block';
+      document.getElementById('campaigns-msg').style.display = 'none';
+      document.getElementById('campaigns-results').style.display = 'none';
+      document.getElementById('btn-load-campaigns').disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(campaigns) {
+          document.getElementById('campaigns-spinner').style.display = 'none';
+          document.getElementById('btn-load-campaigns').disabled = false;
+
+          if (!campaigns || campaigns.length === 0) {
+            showMsg('campaigns-msg', 'No campaigns found with 100+ recipients.', 'info');
+            return;
+          }
+
+          currentCampaigns = campaigns;
+          document.getElementById('campaigns-results').style.display = 'block';
+          document.getElementById('campaign-count').textContent = campaigns.length + ' campaigns found (100+ recipients)';
+          renderCampaigns(campaigns);
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('campaigns-spinner').style.display = 'none';
+          document.getElementById('btn-load-campaigns').disabled = false;
+          showMsg('campaigns-msg', 'Error: ' + err.message, 'error');
+        })
+        .dashboardLoadCampaigns();
+    }
+
+    function renderCampaigns(campaigns) {
+      var container = document.getElementById('campaign-list');
+      container.innerHTML = '';
+
+      for (var i = 0; i < campaigns.length; i++) {
+        var c = campaigns[i];
+        var div = document.createElement('div');
+        div.className = 'campaign-item';
+
+        var resendBadge = c.sendCount > 1
+          ? '<span class="badge badge-resend">' + c.sendCount + ' sends</span>'
+          : '';
+
+        div.innerHTML = '<label>'
+          + '<input type="checkbox" class="campaign-cb" data-index="' + i + '"> '
+          + '<span class="campaign-subject">' + escapeHtml(c.subject) + resendBadge + '</span>'
+          + '<span class="campaign-detail">' + escapeHtml(c.dates) + ' &middot; '
+          + c.totalRecipients + ' recipients &middot; ' + c.openRate + '% open rate</span>'
+          + '</label>';
+
+        container.appendChild(div);
+      }
+
+      // Show track button
+      document.getElementById('btn-track').style.display = 'block';
+    }
+
+    function trackSelected() {
+      var checked = document.querySelectorAll('.campaign-cb:checked');
+      if (checked.length === 0) {
+        showMsg('track-msg', 'No campaigns selected.', 'info');
+        return;
+      }
+
+      var selections = [];
+      checked.forEach(function(cb) {
+        var idx = parseInt(cb.getAttribute('data-index'));
+        var c = currentCampaigns[idx];
+        selections.push({ subject: c.subject, campaignIds: c.campaignIds });
+      });
+
+      if (!confirm('Track ' + selections.length + ' campaign(s)? This will create new columns and fetch open data from Mailchimp.')) return;
+
+      document.getElementById('track-spinner').style.display = 'block';
+      document.getElementById('btn-track').disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('track-spinner').style.display = 'none';
+          document.getElementById('btn-track').disabled = false;
+          showMsg('track-msg', result, 'success');
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('track-spinner').style.display = 'none';
+          document.getElementById('btn-track').disabled = false;
+          showMsg('track-msg', 'Error: ' + err.message, 'error');
+        })
+        .dashboardTrackCampaigns(selections);
+    }
+
+    // ---- Unsubscribe Sync ----
+    function runUnsubSync() {
+      document.getElementById('unsub-spinner').style.display = 'block';
+      document.getElementById('unsub-msg').style.display = 'none';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('unsub-spinner').style.display = 'none';
+          showMsg('unsub-msg', result, 'success');
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('unsub-spinner').style.display = 'none';
+          showMsg('unsub-msg', 'Error: ' + err.message, 'error');
+        })
+        .dashboardSyncUnsubscribes();
+    }
+
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
