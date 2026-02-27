@@ -6,9 +6,12 @@
  * Adds custom menu when the spreadsheet is opened.
  */
 function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu('Money Club')
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Money Club')
     .addItem('Email Dashboard', 'showDashboard')
+    .addToUi();
+  ui.createMenu('Mailchimp')
+    .addItem('Open Dashboard', 'showMcDashboard')
     .addToUi();
 }
 

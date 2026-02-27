@@ -176,6 +176,71 @@ function sendCampaign(type, rollsToSend) {
 }
 
 /**
+ * Force-resend a donor thank-you with manually-specified streak info.
+ * Use when the streak wasn't auto-detected due to a name mismatch in the tracker tab.
+ *
+ * Each entry: { roll, streak, fund }
+ *   roll:   exactly as it appears in Master tab column D  (e.g. '214-0351')
+ *   streak: consecutive months from the tracker tab       (e.g. 24)
+ *   fund:   'BMS', 'Leadership', or 'Both'
+ *
+ * Example call from the script editor:
+ *   resendDonorThanks([
+ *     { roll: '214-0351', streak: 24, fund: 'BMS' },
+ *     { roll: '214-0385', streak: 18, fund: 'Leadership' },
+ *     { roll: '214-0362', streak: 12, fund: 'Leadership' },
+ *     { roll: '214-0470', streak:  8, fund: 'Leadership' },
+ *   ]);
+ *
+ * @param {Object[]} donors - array of { roll, streak, fund }
+ * @returns {string} status message
+ */
+function resendDonorThanks(donors) {
+  var profiles = buildDonorProfiles();
+  var profileMap = new Map(profiles.map(function(p) { return [p.roll, p]; }));
+  var remaining = getRemainingQuota();
+
+  if (remaining <= 0) {
+    return 'Daily email limit reached. Try again tomorrow.';
+  }
+
+  var sent = 0;
+  var failed = 0;
+
+  for (var i = 0; i < donors.length; i++) {
+    if (sent >= remaining) break;
+
+    var entry = donors[i];
+    var donor = profileMap.get(entry.roll);
+    if (!donor) {
+      Logger.log('resendDonorThanks: no profile found for roll ' + entry.roll);
+      failed++;
+      continue;
+    }
+
+    // Copy donor and apply streak overrides
+    var enriched = {};
+    for (var key in donor) enriched[key] = donor[key];
+    enriched.streak = entry.streak;
+    enriched.fund = entry.fund;
+    enriched.isMonthlyDonor = entry.streak > 1;
+
+    var emailData = donorThankYou(enriched);
+    if (sendEmail(enriched.email, emailData.subject, emailData.html)) {
+      logEmailSent(enriched.roll, 'donor-thanks', enriched.streak, enriched.email);
+      Logger.log('Resent to ' + enriched.fullName + ' (' + entry.roll + ') — streak: ' + enriched.streak + ' (' + enriched.fund + ')');
+      sent++;
+    } else {
+      failed++;
+    }
+  }
+
+  var msg = 'Resent ' + sent + ' donor thank-you email(s).';
+  if (failed > 0) msg += ' ' + failed + ' failed — check Logs for details.';
+  return msg;
+}
+
+/**
  * Get campaign status for the dashboard.
  * @returns {Object} status info
  */

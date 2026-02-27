@@ -11,9 +11,9 @@ const MC_CONFIG = {
 
   // Column mappings (1-based) — Email Stats tab
   ROLL_COL: 7,            // G — Roll Number
-  EMAIL_COL: 12,          // L — Current email address
-  MC_EMAIL_COL: 13,       // M — Mailchimp email (for mismatch flagging)
-  SYNC_STATUS_COL: 14,    // N — Sync status (Match / Mismatch / Not in Mailchimp)
+  EMAIL_COL: 16,          // P — Current email address
+  MC_EMAIL_COL: 17,       // Q — Mailchimp email (for mismatch flagging)
+  SYNC_STATUS_COL: 18,    // R — Sync status (Match / Mismatch / Not in Mailchimp)
   // Filters
   MIN_RECIPIENTS: 100,    // Only show campaigns with 100+ recipients
 
@@ -117,11 +117,3 @@ function getMcRollTag() {
   throw new Error('Could not find a "Roll Number" merge field in Mailchimp. Check your audience merge fields.');
 }
 
-/**
- * Add custom menu to the spreadsheet.
- */
-function onOpen() {
-  SpreadsheetApp.getUi().createMenu('Mailchimp')
-    .addItem('Open Dashboard', 'showMcDashboard')
-    .addToUi();
-}

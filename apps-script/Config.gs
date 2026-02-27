@@ -13,7 +13,7 @@ const EMAIL_CONFIG = {
   EMAIL_SHEET_ID: '1Ca03tfQPmgGm02AHJdwA_rWJ_S3JpM82iREE6d6QqwI',
   EMAIL_TAB: 'Email Stats',
   EMAIL_ROLL_COL: 7,    // Column G
-  EMAIL_ADDR_COL: 12,   // Column L
+  EMAIL_ADDR_COL: 16,   // Column P
   UNSUB_TAB: 'Unsubscribed',
   UNSUB_ROLL_COL: 1,    // Column A
   MEMBERSHIP_TAB: 'Membership Status',
@@ -52,7 +52,7 @@ const EMAIL_CONFIG = {
   TRACKER_LAST_COL: 4,    // D
   TRACKER_STREAK_COL: 5,  // E
   TRACKER_START_ROW: 4,
-  TRACKER_END_ROW: 50,
+  TRACKER_END_ROW: 200,
 
   // Sender info
   SENDER_NAME: 'MI Theta Money Club',
