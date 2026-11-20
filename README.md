@@ -1,6 +1,7 @@
 # MI Theta Money Club - Giving Lookup
 
 A web application for tracking and displaying donation information for the MI Theta Chapter of Sigma Phi Epsilon fraternity. This tool helps members view their giving levels, track scholarship fund progress, and recognize top donors.
+https://tfak23.github.io/MIThetaMoneyClub/ 
 
 ## Overview
 
