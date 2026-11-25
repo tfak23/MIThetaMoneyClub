@@ -682,7 +682,6 @@ function renderFundProgress(fundData) {
     const asOfText = fundData.asOfDate ? `As of ${fundData.asOfDate}` : '';
 
     container.innerHTML = `
-        ${renderBmsPushBanner(fundData.bms)}
         <h2 class="section-title">Fund Progress</h2>
         <div class="accent-divider accent-divider-center"></div>
         ${asOfText ? `<p class="fund-as-of">${asOfText}</p>` : ''}
@@ -745,13 +744,13 @@ function renderFundProgress(fundData) {
         });
     });
 
-    startBmsPushCountdown(container);
+    renderBmsPush(fundData.bms);
     show(container);
 }
 
 // ===========================
 // BMS year-end push banner
-// Shows above Fund Progress until the BMS hits its goal or the deadline passes.
+// Shows right below the name lookup until the BMS hits its goal or the deadline passes.
 // ===========================
 
 const BMS_PUSH_DEADLINE = new Date('2027-01-01T00:00:00-05:00'); // end of Dec 31, 2026 (Eastern)
@@ -788,12 +787,20 @@ function renderBmsPushBanner(bms) {
         </div>`;
 }
 
-function startBmsPushCountdown(container) {
+function renderBmsPush(bms) {
+    const section = document.getElementById('bms-push');
+    if (!section) return;
+
     if (bmsPushTimer) clearInterval(bmsPushTimer);
     bmsPushTimer = null;
 
-    const banner = container.querySelector('.bms-push-banner');
-    if (!banner) return;
+    section.innerHTML = renderBmsPushBanner(bms);
+    const banner = section.querySelector('.bms-push-banner');
+    if (!banner) {
+        hide(section);
+        return;
+    }
+    show(section);
 
     const tick = () => {
         const secs = Math.max(0, Math.floor((BMS_PUSH_DEADLINE.getTime() - Date.now()) / 1000));
@@ -809,7 +816,8 @@ function startBmsPushCountdown(container) {
         if (secs === 0) {
             clearInterval(bmsPushTimer);
             bmsPushTimer = null;
-            banner.remove();
+            section.innerHTML = '';
+            hide(section);
         }
     };
 

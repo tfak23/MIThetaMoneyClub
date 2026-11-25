@@ -481,14 +481,19 @@ main {
     margin: 0 auto;
 }
 
-/* BMS year-end push banner */
+/* BMS year-end push banner (sits right below the name lookup) */
+.bms-push-section {
+    max-width: 700px;
+    margin: 24px auto 0;
+    padding: 0 20px;
+}
+
 .bms-push-banner {
     background: var(--sigep-red);
     color: var(--sigep-white);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
     padding: 20px 22px;
-    margin-bottom: 32px;
     text-align: left;
 }
 
@@ -1874,7 +1879,8 @@ main {
         padding: 24px 16px;
     }
 
-    .search-section {
+    .search-section,
+    .bms-push-section {
         padding: 0 12px;
     }
 
