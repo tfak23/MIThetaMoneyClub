@@ -682,6 +682,7 @@ function renderFundProgress(fundData) {
     const asOfText = fundData.asOfDate ? `As of ${fundData.asOfDate}` : '';
 
     container.innerHTML = `
+        ${renderBmsPushBanner(fundData.bms)}
         <h2 class="section-title">Fund Progress</h2>
         <div class="accent-divider accent-divider-center"></div>
         ${asOfText ? `<p class="fund-as-of">${asOfText}</p>` : ''}
@@ -744,7 +745,76 @@ function renderFundProgress(fundData) {
         });
     });
 
+    startBmsPushCountdown(container);
     show(container);
+}
+
+// ===========================
+// BMS year-end push banner
+// Shows above Fund Progress until the BMS hits its goal or the deadline passes.
+// ===========================
+
+const BMS_PUSH_DEADLINE = new Date('2027-01-01T00:00:00-05:00'); // end of Dec 31, 2026 (Eastern)
+const BMS_PUSH_DONATE_URL = 'https://give.sigep.org/give/211213/?_ga=2.62207717.837129945.1670203913-1808852390.1670203913#!/donation/checkout?designation=155554';
+let bmsPushTimer = null;
+
+function renderBmsPushBanner(bms) {
+    if (!bms || !bms.goal || bms.total >= bms.goal) return '';
+    if (Date.now() >= BMS_PUSH_DEADLINE.getTime()) return '';
+
+    const pct = Math.min((bms.total / bms.goal) * 100, 100);
+    const remaining = bms.goal - bms.total;
+    const units = ['days', 'hrs', 'min', 'sec'];
+
+    return `
+        <div class="bms-push-banner">
+            <p class="bms-push-eyebrow">Year-End Push</p>
+            <h3 class="bms-push-title">Let's finish the Balanced Man Scholarship by December 31!</h3>
+            <div class="bms-push-track" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100" aria-label="Balanced Man Scholarship progress">
+                <div class="bms-push-fill" style="width: ${pct}%"></div>
+            </div>
+            <div class="bms-push-meta">
+                <span>${Math.floor(pct)}% funded</span>
+                <span>${formatCurrency(Math.ceil(remaining))} to go</span>
+            </div>
+            <div class="bms-push-countdown" aria-label="Time left in 2026">
+                ${units.map(u => `
+                    <div class="bms-push-unit">
+                        <span class="bms-push-num" data-unit="${u}">--</span>
+                        <span class="bms-push-unit-label">${u}</span>
+                    </div>`).join('')}
+            </div>
+            <a href="${BMS_PUSH_DONATE_URL}" class="bms-push-btn" target="_blank" rel="noopener noreferrer">Give Now</a>
+        </div>`;
+}
+
+function startBmsPushCountdown(container) {
+    if (bmsPushTimer) clearInterval(bmsPushTimer);
+    bmsPushTimer = null;
+
+    const banner = container.querySelector('.bms-push-banner');
+    if (!banner) return;
+
+    const tick = () => {
+        const secs = Math.max(0, Math.floor((BMS_PUSH_DEADLINE.getTime() - Date.now()) / 1000));
+        const values = {
+            days: Math.floor(secs / 86400),
+            hrs: Math.floor((secs % 86400) / 3600),
+            min: Math.floor((secs % 3600) / 60),
+            sec: secs % 60,
+        };
+        banner.querySelectorAll('.bms-push-num').forEach(el => {
+            el.textContent = String(values[el.dataset.unit]).padStart(2, '0');
+        });
+        if (secs === 0) {
+            clearInterval(bmsPushTimer);
+            bmsPushTimer = null;
+            banner.remove();
+        }
+    };
+
+    tick();
+    bmsPushTimer = setInterval(tick, 1000);
 }
 
 async function showScholarshipDetail(key) {
